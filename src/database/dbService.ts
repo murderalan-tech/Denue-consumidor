@@ -14,7 +14,6 @@ import {
 } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, signInWithPopup, Auth } from 'firebase/auth';
 import { Empresa, PlanTrabajo, Asesor } from '../types';
-import { SEED_ASESORES, SEED_EMPRESAS } from './initialSeed';
 import * as localDb from './localDb';
 
 export interface FirebaseConfig {
