@@ -1,0 +1,5 @@
+Nombre,Giro,Latitud,Longitud,Direccion,Telefono,Contacto,RazonSocial,GrupoGasolinero
+Taller de Prueba Alfa,taller_mecanico,28.630120,-106.081230,"Calle de Prueba 123, Chihuahua, Chih.","6149998888","Jose Lopez","PRUEBA SA",
+Refaccionaria de Prueba Beta,refaccionaria,28.651230,-106.091230,"Av. de Prueba 456, Chihuahua, Chih.","6147776666","Maria Ruiz","REPUESTOS PRUEBA",
+Gasolinera de Prueba Gamma,gasolinera,31.731230,-106.401230,"Av. Tecnologico 789, Cd. Juarez, Chih.","6565554444","Carlos Gomez","ESTACION PRUEBA","Grupo Gazpro"
+Taller Erroneo,taller_invalido,28.630000,-106.080000,"Direccion Corta","","","",""
