@@ -25,7 +25,7 @@ export interface FirebaseConfig {
   appId: string;
 }
 
-// 1. Resolve Firebase configuration from LocalStorage or Vite Env Variables
+// 1. Resolve Firebase configuration from LocalStorage, Vite Env Variables or Built-in Default
 export function getFirebaseConfig(): FirebaseConfig | null {
   const saved = localStorage.getItem('denue_pv_firebase_config');
   if (saved) {
@@ -50,7 +50,15 @@ export function getFirebaseConfig(): FirebaseConfig | null {
     };
   }
 
-  return null;
+  // Built-in Default Firebase Configuration (denue-pv-alchisa)
+  return {
+    apiKey: "AIzaSyCBufJdnzjmQ6dONuuWYLGXADQklsU2DRQ",
+    authDomain: "denue-pv-alchisa.firebaseapp.com",
+    projectId: "denue-pv-alchisa",
+    storageBucket: "denue-pv-alchisa.firebasestorage.app",
+    messagingSenderId: "229341443004",
+    appId: "1:229341443004:web:a369a03e2ff3c9ccf5f1b9"
+  };
 }
 
 const config = getFirebaseConfig();
