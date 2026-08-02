@@ -6,7 +6,8 @@ export type EstatusPros =
   | 'prospecto_validado'
   | 'cliente_de_cliente'
   | 'no_aplica'
-  | 'no_existe';
+  | 'no_existe'
+  | 'prospectado';
 
 export type RolAsesor = 'asesor' | 'administrador';
 
@@ -15,6 +16,7 @@ export interface Asesor {
   nombre: string;
   correoGoogle: string;
   rol: RolAsesor;
+  fotoUrl?: string; // Google Profile avatar image URL
 }
 
 export interface Empresa {
@@ -33,18 +35,31 @@ export interface Empresa {
   razonSocial?: string; // optional Razón Social from DENUE
   linkCrm360?: string; // Lead URL in CRM L360 (used for Gasolineras groups)
   comentariosNoAplica?: string; // Comments why gas station group does not apply
+  vecesAgregadoAlPlan?: number; // Number of times added to work plan
+  // Plan history fields – persisted when prospecting cycle completes
+  planLinkCrm360?: string;
+  planOportunidadCreada?: boolean;
+  planLinkOportunidad360?: string;
+  planMotivoNoOportunidad?: string;
+  planFechaInicio?: string; // ISO date of when the last plan cycle started
+  planFechaFin?: string;   // ISO date of when the cycle completed
+  ventaConcretada?: boolean;    // Was the sale closed after prospecting?
+  volumenPrimeraVenta?: string; // Volume/amount of the first sale
   fechaActualizacion: string; // ISO date string
 }
 
 export interface PlanTrabajo {
   id: string;
   empresaId: string;
+  fechaInicio?: string; // ISO date format string
+  fechaFin?: string; // ISO date format string when cycle completed
   visitado: boolean;
   linkCrm360: string;
-  marcaCompetencia: string;
+  marcasCompetencia?: string[]; // Array of selected brands
+  marcaCompetencia?: string; // Legacy/string joining for compatibility
   oportunidadCreada: boolean;
   linkOportunidad360?: string;
-  motivoNoOportunidad?: string;
+  motivoNoOportunidad?: 'No se encontro al encargado' | 'No Interesado' | 'No contamos con el producto necesitado' | string;
   cicloCompletado: boolean; // calculated field
 }
 
@@ -89,6 +104,12 @@ export const ESTATUS_LABELS: Record<EstatusPros, { label: string; bg: string; te
     bg: 'bg-rose-50 text-rose-600 border-rose-200', 
     text: 'text-rose-600', 
     border: 'border-rose-200' 
+  },
+  prospectado: {
+    label: 'Prospectado',
+    bg: 'bg-purple-50 text-purple-700 border-purple-200',
+    text: 'text-purple-700',
+    border: 'border-purple-200'
   }
 };
 

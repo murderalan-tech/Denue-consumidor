@@ -104,7 +104,8 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
           prospecto_validado: '#3b82f6', // Blue
           cliente_de_cliente: '#f59e0b', // Amber
           no_aplica: '#6b7280',        // Slate
-          no_existe: '#ef4444'         // Red
+          no_existe: '#ef4444',        // Red
+          prospectado: '#8b5cf6'       // Purple
         };
 
         const color = statusColors[emp.estatus] || '#9ca3af';

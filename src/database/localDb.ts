@@ -8,21 +8,6 @@ const KEY_PLAN_TRABAJO = 'denue_pv_plantrabajo';
 export function initializeDb() {
   if (!localStorage.getItem(KEY_ASESORES)) {
     localStorage.setItem(KEY_ASESORES, JSON.stringify(SEED_ASESORES));
-  } else {
-    // Ensure SEED_ASESORES entries (e.g. alan.olivares@alchisa.com) exist in local database
-    try {
-      const existing: Asesor[] = JSON.parse(localStorage.getItem(KEY_ASESORES) || '[]');
-      let updated = false;
-      SEED_ASESORES.forEach(seed => {
-        if (!existing.some(a => a.correoGoogle.toLowerCase() === seed.correoGoogle.toLowerCase())) {
-          existing.push(seed);
-          updated = true;
-        }
-      });
-      if (updated) {
-        localStorage.setItem(KEY_ASESORES, JSON.stringify(existing));
-      }
-    } catch (e) {}
   }
 
   if (!localStorage.getItem(KEY_EMPRESAS)) {
@@ -46,10 +31,38 @@ export function addAsesor(asesor: Asesor): Asesor {
   return asesor;
 }
 
+export function updateAsesor(asesor: Asesor): Asesor {
+  const asesores = getAsesores();
+  const idx = asesores.findIndex(a => a.id === asesor.id);
+  if (idx !== -1) {
+    asesores[idx] = asesor;
+    localStorage.setItem(KEY_ASESORES, JSON.stringify(asesores));
+  }
+  return asesor;
+}
+
 export function deleteAsesor(id: string): void {
   const asesores = getAsesores();
   const filtered = asesores.filter(a => a.id !== id);
   localStorage.setItem(KEY_ASESORES, JSON.stringify(filtered));
+
+  // Unassign companies linked to this deleted advisor (set asesorId to null)
+  const empresas = getEmpresas();
+  let empUpdated = false;
+  empresas.forEach((emp, idx) => {
+    if (emp.asesorId === id) {
+      empresas[idx] = {
+        ...emp,
+        asesorId: null,
+        fechaActualizacion: new Date().toISOString()
+      };
+      empUpdated = true;
+    }
+  });
+
+  if (empUpdated) {
+    localStorage.setItem(KEY_EMPRESAS, JSON.stringify(empresas));
+  }
 }
 
 export function getEmpresas(): Empresa[] {
@@ -91,8 +104,19 @@ export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
   const plans = getPlanTrabajo();
   const empresas = getEmpresas();
   
+  if (!plan.fechaInicio) {
+    plan.fechaInicio = new Date().toISOString();
+  }
+
+  // Support array of competitor brands
+  if (Array.isArray(plan.marcasCompetencia)) {
+    plan.marcaCompetencia = plan.marcasCompetencia.join(', ');
+  } else if (plan.marcaCompetencia && !plan.marcasCompetencia) {
+    plan.marcasCompetencia = plan.marcaCompetencia.split(',').map(s => s.trim()).filter(Boolean);
+  }
+
   const crmFilled = !!plan.linkCrm360?.trim();
-  const competitorFilled = !!plan.marcaCompetencia?.trim();
+  const competitorFilled = (plan.marcasCompetencia && plan.marcasCompetencia.length > 0) || !!plan.marcaCompetencia?.trim();
   let opportunityDetailsFilled = false;
   
   if (plan.oportunidadCreada) {
@@ -101,9 +125,60 @@ export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
     opportunityDetailsFilled = !!plan.motivoNoOportunidad?.trim();
   }
 
-  plan.cicloCompletado = crmFilled && competitorFilled && opportunityDetailsFilled;
+  plan.cicloCompletado = plan.visitado && crmFilled && competitorFilled && opportunityDetailsFilled;
 
+  if (plan.cicloCompletado && !plan.fechaFin) {
+    plan.fechaFin = new Date().toISOString();
+  } else if (!plan.cicloCompletado) {
+    delete plan.fechaFin;
+  }
+
+  // Handle special case: "No se encontro al encargado"
+  if (!plan.oportunidadCreada && plan.motivoNoOportunidad === 'No se encontro al encargado') {
+    // 1. Delete plan of work
+    deletePlanTrabajoByEmpresa(plan.empresaId);
+
+    // 2. Keep company as prospecto_validado and mark visitado flag if needed or log
+    const empIdx = empresas.findIndex(e => e.id === plan.empresaId);
+    if (empIdx !== -1) {
+      empresas[empIdx] = {
+        ...empresas[empIdx],
+        marcaCompetencia: plan.marcaCompetencia,
+        fechaActualizacion: new Date().toISOString()
+      };
+      localStorage.setItem(KEY_EMPRESAS, JSON.stringify(empresas));
+    }
+    return plan;
+  }
+
+  // Handle completion: when completed, remove from plan of work and mark company status as 'prospectado'
+  if (plan.cicloCompletado) {
+    deletePlanTrabajoByEmpresa(plan.empresaId);
+
+    // Update company status to 'prospectado' and persist ALL plan fields for historical reporting
+    const empIdx = empresas.findIndex(e => e.id === plan.empresaId);
+    if (empIdx !== -1) {
+      empresas[empIdx] = {
+        ...empresas[empIdx],
+        estatus: 'prospectado',
+        marcaCompetencia: plan.marcaCompetencia,
+        // Persist plan history fields so CSV report can read them after plan is deleted
+        planLinkCrm360: plan.linkCrm360 || '',
+        planOportunidadCreada: plan.oportunidadCreada,
+        planLinkOportunidad360: plan.linkOportunidad360 || '',
+        planMotivoNoOportunidad: plan.motivoNoOportunidad || '',
+        planFechaInicio: plan.fechaInicio || '',
+        planFechaFin: plan.fechaFin || new Date().toISOString(),
+        fechaActualizacion: new Date().toISOString()
+      };
+      localStorage.setItem(KEY_EMPRESAS, JSON.stringify(empresas));
+    }
+    return plan;
+  }
+
+  // Otherwise update or add plan
   const idx = plans.findIndex(p => p.id === plan.id || p.empresaId === plan.empresaId);
+  const isNewPlan = idx === -1;
   if (idx !== -1) {
     plans[idx] = plan;
   } else {
@@ -114,8 +189,10 @@ export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
 
   const empIdx = empresas.findIndex(e => e.id === plan.empresaId);
   if (empIdx !== -1) {
+    const currentCount = empresas[empIdx].vecesAgregadoAlPlan || 0;
     empresas[empIdx] = {
       ...empresas[empIdx],
+      vecesAgregadoAlPlan: isNewPlan ? currentCount + 1 : (currentCount === 0 ? 1 : currentCount),
       marcaCompetencia: plan.marcaCompetencia,
       fechaActualizacion: new Date().toISOString()
     };

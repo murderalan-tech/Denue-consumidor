@@ -4,12 +4,14 @@ import {
   Fuel, 
   ClipboardList, 
   LayoutDashboard,
-  ShieldCheck
+  ShieldCheck,
+  Trophy,
+  User
 } from 'lucide-react';
 import { Asesor } from '../types';
 import UserProfileSwitcher from './UserProfileSwitcher';
 
-export type SidebarRoute = 'refaccionarias' | 'talleres' | 'gasolineras' | 'plan_trabajo' | 'dashboard' | 'admin_panel';
+export type SidebarRoute = 'refaccionarias' | 'talleres' | 'gasolineras' | 'plan_trabajo' | 'dashboard' | 'admin_panel' | 'empresas_concluidas';
 
 interface SidebarProps {
   currentRoute: SidebarRoute;
@@ -26,7 +28,7 @@ export default function Sidebar({ currentRoute, onRouteChange, currentUser, onUs
       id: 'refaccionarias' as SidebarRoute,
       label: 'Refaccionarias',
       icon: Settings,
-      desc: 'Buscador y geolocalización'
+      desc: 'Mapa de Refaccionarias'
     },
     {
       id: 'talleres' as SidebarRoute,
@@ -38,7 +40,7 @@ export default function Sidebar({ currentRoute, onRouteChange, currentUser, onUs
       id: 'gasolineras' as SidebarRoute,
       label: 'Gasolineras',
       icon: Fuel,
-      desc: 'Catálogo agrupado por marca'
+      desc: 'Grupos Gasolineros'
     },
     {
       id: 'plan_trabajo' as SidebarRoute,
@@ -56,6 +58,12 @@ export default function Sidebar({ currentRoute, onRouteChange, currentUser, onUs
 
   if (currentUser.rol === 'administrador') {
     routes.push({
+      id: 'empresas_concluidas' as SidebarRoute,
+      label: 'Empresas Concluidas',
+      icon: Trophy,
+      desc: 'Seguimiento post-prospección'
+    });
+    routes.push({
       id: 'admin_panel' as SidebarRoute,
       label: 'Panel Admin',
       icon: ShieldCheck,
@@ -68,11 +76,14 @@ export default function Sidebar({ currentRoute, onRouteChange, currentUser, onUs
       
       {/* Sidebar Header */}
       <div className="space-y-6">
-        <div className="flex items-center gap-2 px-2">
-          <div className="text-xl">🔷</div>
+        <div className="flex items-center gap-2.5 px-2">
+          <div className="p-1.5 bg-blue-700 text-white rounded-lg shadow-2xs shrink-0 flex items-center gap-0.5">
+            <User className="w-4 h-4" />
+            <Wrench className="w-3 h-3 -ml-1.5" />
+          </div>
           <div>
-            <span className="font-bold text-sm tracking-tight text-[#37352F] block leading-none">
-              DENUE PV
+            <span className="font-bold text-xs tracking-tight text-[#37352F] block leading-none uppercase">
+              DENUE CONSUMIDOR
             </span>
             <div className="flex items-center gap-1 mt-1">
               <span className={`w-1.5 h-1.5 rounded-full ${isCloudActive ? 'bg-emerald-500 animate-pulse' : 'bg-neutral-400'}`}></span>

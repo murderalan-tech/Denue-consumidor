@@ -1,0 +1,11 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Blue background box with rounded corners -->
+  <rect width="100" height="100" rx="24" fill="#1D4ED8" />
+
+  <!-- Person Silhouette (Head & Bust) -->
+  <circle cx="38" cy="38" r="14" fill="#FFFFFF" />
+  <path fill="#FFFFFF" d="M14 78c0-13.255 10.745-24 24-24s24 10.745 24 24v2H14v-2z" />
+
+  <!-- Mechanic Wrench (Diagonal on right) -->
+  <path fill="#FFFFFF" fill-rule="evenodd" clip-rule="evenodd" d="M78.5 21.5a10 10 0 0 0-11.8 1.5l-6.8 6.8 6.8 6.8 6.8-6.8a3 3 0 0 1 4.2 0 3 3 0 0 1 0 4.2l-6.8 6.8 19.5 19.5a4 4 0 0 1-5.7 5.7L55.4 46.5l-6.8 6.8a3 3 0 0 1-4.2 0 3 3 0 0 1 0-4.2l6.8-6.8-6.8-6.8a10 10 0 0 0 24.1-14z" />
+</svg>

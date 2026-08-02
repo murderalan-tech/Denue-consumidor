@@ -8,12 +8,11 @@ import {
   XCircle, 
   AlertTriangle,
   Shield,
-  Users,
   UserPlus,
   Trash2
 } from 'lucide-react';
 import { Empresa, Giro, Asesor, RolAsesor } from '../types';
-import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, deleteAsesor } from '../database/dbService';
+import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor } from '../database/dbService';
 
 interface AdminPanelSectionProps {
   currentUser: Asesor;
@@ -31,6 +30,8 @@ interface ParsedCSVRow {
   contacto: string;
   razonSocial: string;
   grupoGasolinero: string;
+  correoAsesor: string;
+  asesorId: string | null;
   isValid: boolean;
   error?: string;
 }
@@ -101,6 +102,21 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     onDataChange();
   };
 
+  // --- CHANGE USER ROLE ACTION ---
+  const handleChangeUserRole = (targetUser: Asesor, newRol: RolAsesor) => {
+    if (targetUser.id === currentUser.id) {
+      alert("No puedes cambiar tu propio rol mientras estás en sesión.");
+      return;
+    }
+    const updatedUser: Asesor = {
+      ...targetUser,
+      rol: newRol
+    };
+    updateAsesor(updatedUser);
+    setAdminSuccess(`Rol de ${targetUser.nombre} actualizado a ${newRol === 'administrador' ? 'Administrador' : 'Asesor'}.`);
+    onDataChange();
+  };
+
   // --- DELETE USER ACTION ---
   const handleDeleteUser = (userToDelete: Asesor) => {
     if (userToDelete.id === currentUser.id) {
@@ -167,13 +183,14 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       'Telefono',
       'Contacto',
       'RazonSocial',
-      'GrupoGasolinero'
+      'GrupoGasolinero',
+      'CorreoAsesor'
     ];
 
     const sampleRows = [
-      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe, Chihuahua, Chih.', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', ''],
-      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203, Cd. Juarez, Chih.', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', ''],
-      ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500, Chihuahua, Chih.', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex']
+      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe, Chihuahua, Chih.', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com'],
+      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203, Cd. Juarez, Chih.', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com'],
+      ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500, Chihuahua, Chih.', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex', 'juan.lopez@alchisa.com']
     ];
 
     const csvContent = '\uFEFF' + [
@@ -221,6 +238,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       }
 
       const parsed: ParsedCSVRow[] = [];
+      const currentAsesores = getAsesores();
 
       const parseCSVLine = (lineText: string) => {
         let p = '', r = [];
@@ -251,12 +269,21 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
         const contCol = columns[6] || '';
         const razonCol = columns[7] || '';
         const groupCol = columns[8] || '';
+        const correoAsesorCol = (columns[9] || '').trim().toLowerCase();
 
         const latVal = parseFloat(latColStr);
         const lngVal = parseFloat(lngColStr);
 
         let isValid = true;
         let errorMsg = '';
+        let matchedAsesorId: string | null = null;
+
+        if (correoAsesorCol) {
+          const foundAsesor = currentAsesores.find(a => a.correoGoogle.toLowerCase() === correoAsesorCol);
+          if (foundAsesor) {
+            matchedAsesorId = foundAsesor.id;
+          }
+        }
 
         if (!nombreCol.trim()) {
           isValid = false;
@@ -283,6 +310,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
           contacto: contCol,
           razonSocial: razonCol || 'N/A',
           grupoGasolinero: groupCol,
+          correoAsesor: correoAsesorCol,
+          asesorId: matchedAsesorId,
           isValid,
           error: errorMsg
         });
@@ -310,7 +339,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       telefono: r.telefono.trim(),
       contacto: r.contacto.trim(),
       estatus: 'sin_accion',
-      asesorId: null,
+      asesorId: r.asesorId,
       grupoGasolinero: r.giro === 'gasolinera' ? (r.grupoGasolinero.trim() || 'Independiente') : undefined,
       fechaActualizacion: new Date().toISOString()
     }));
@@ -673,6 +702,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                         <th className="p-2.5">Estatus</th>
                         <th className="p-2.5">Nombre</th>
                         <th className="p-2.5">Giro</th>
+                        <th className="p-2.5">Asesor Asignado</th>
                         <th className="p-2.5">GPS (Lat/Lng)</th>
                         <th className="p-2.5">Dirección</th>
                         <th className="p-2.5">Detalles</th>
@@ -705,6 +735,21 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                           </td>
                           <td className="p-2.5 text-[#7C7B77] capitalize">
                             {row.giro ? row.giro.replace('_', ' ') : <span className="text-rose-400 italic">Vacío</span>}
+                          </td>
+                          <td className="p-2.5 text-[#7C7B77]">
+                            {row.correoAsesor ? (
+                              row.asesorId ? (
+                                <span className="text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded text-[10px]">
+                                  {row.correoAsesor}
+                                </span>
+                              ) : (
+                                <span className="text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded text-[10px]">
+                                  {row.correoAsesor} (No reg.)
+                                </span>
+                              )
+                            ) : (
+                              <span className="text-neutral-400 italic text-[10px]">Sin asignar</span>
+                            )}
                           </td>
                           <td className="p-2.5 font-mono text-[#7C7B77]">
                             {row.latitud !== null && row.longitud !== null 
@@ -871,16 +916,20 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                         </td>
                         <td className="p-3 text-[#7C7B77] font-mono text-[11px]">{u.correoGoogle}</td>
                         <td className="p-3">
-                          {u.rol === 'administrador' ? (
+                          {u.id === currentUser.id ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full uppercase">
                               <Shield className="w-3 h-3" />
-                              Administrador
+                              Administrador (Tú)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-neutral-100 text-neutral-600 border border-neutral-200 px-2 py-0.5 rounded-full uppercase">
-                              <Users className="w-3 h-3 text-neutral-500" />
-                              Asesor
-                            </span>
+                            <select
+                              value={u.rol}
+                              onChange={(e) => handleChangeUserRole(u, e.target.value as RolAsesor)}
+                              className="px-2 py-1 text-[10px] font-bold rounded-lg border border-[#EAEAEA] bg-white text-[#37352F] cursor-pointer focus:outline-none focus:border-blue-600 shadow-2xs"
+                            >
+                              <option value="asesor">👤 Asesor de Ventas</option>
+                              <option value="administrador">🛡️ Administrador</option>
+                            </select>
                           )}
                         </td>
                         <td className="p-3 text-right">

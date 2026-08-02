@@ -1,89 +1,10 @@
-import { useState } from 'react';
-import { LogIn, Settings, Save, RefreshCw } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 interface LoginPageProps {
   onFirebaseGoogleLogin: () => void;
 }
 
 export default function LoginPage({ onFirebaseGoogleLogin }: LoginPageProps) {
-  // Resolve Google Client ID from: LocalStorage -> Vite Env -> Sandbox fallback
-  const [clientId, setClientId] = useState<string>(() => {
-    const saved = localStorage.getItem('denue_pv_google_client_id');
-    if (saved && saved.trim() !== '') return saved.trim();
-    
-    const envId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    if (envId && envId.trim() !== '') return envId.trim();
-    
-    return '468903748281-dummyclientid.apps.googleusercontent.com';
-  });
-
-  const [showSettings, setShowSettings] = useState(false);
-  const [settingsTab, setSettingsTab] = useState<'google' | 'firebase'>('google');
-  
-  const [tempClientId, setTempClientId] = useState(clientId);
-  
-  const [firebaseConfigInput, setFirebaseConfigInput] = useState<string>(() => {
-    const saved = localStorage.getItem('denue_pv_firebase_config');
-    return saved ? saved : '';
-  });
-
-  const [saveSuccess, setSaveSuccess] = useState(false);
-
-  const handleSaveClientId = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tempClientId.trim()) return;
-
-    localStorage.setItem('denue_pv_google_client_id', tempClientId.trim());
-    setClientId(tempClientId.trim());
-    setSaveSuccess(true);
-
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setShowSettings(false);
-      window.location.reload();
-    }, 1500);
-  };
-
-  const handleResetClientId = () => {
-    localStorage.removeItem('denue_pv_google_client_id');
-    const defaultId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '468903748281-dummyclientid.apps.googleusercontent.com';
-    setClientId(defaultId);
-    setTempClientId(defaultId);
-    window.location.reload();
-  };
-
-  const handleSaveFirebaseConfig = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!firebaseConfigInput.trim()) {
-      localStorage.removeItem('denue_pv_firebase_config');
-      setSaveSuccess(true);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
-      return;
-    }
-
-    try {
-      const parsed = JSON.parse(firebaseConfigInput);
-      if (!parsed.apiKey || !parsed.projectId) {
-        alert("El objeto JSON debe contener al menos 'apiKey' y 'projectId'.");
-        return;
-      }
-      localStorage.setItem('denue_pv_firebase_config', JSON.stringify(parsed, null, 2));
-      setSaveSuccess(true);
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (err) {
-      alert("Error al parsear el JSON de Firebase. Asegúrate de copiar el objeto de configuración válido.");
-    }
-  };
-
-  const handleResetFirebaseConfig = () => {
-    localStorage.removeItem('denue_pv_firebase_config');
-    window.location.reload();
-  };
-
   return (
     <div className="min-h-screen bg-[#FBFBFA] flex flex-col justify-center items-center p-6 select-none font-sans text-[#37352F]">
       
@@ -91,133 +12,27 @@ export default function LoginPage({ onFirebaseGoogleLogin }: LoginPageProps) {
       <div className="w-full max-w-md bg-white border border-[#EAEAEA] rounded-2xl shadow-xl p-8 space-y-7 animate-in fade-in duration-200">
         
         {/* Brand Header */}
-        <div className="text-center space-y-2 relative">
-          {/* Gear icon to toggle Google API console configuration */}
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="absolute right-0 top-0 p-1.5 rounded-lg hover:bg-neutral-100 text-[#7C7B77] hover:text-[#37352F] transition-all cursor-pointer"
-            title="Configurar Google Client ID"
-          >
-            <Settings className="w-4 h-4" />
-          </button>
+        <div className="text-center space-y-3 relative flex flex-col items-center">
+          {/* Avatar Ricardo Mecánico Mobil / Alchisa */}
+          <div className="relative">
+            <img 
+              src="/mechanic_avatar.png" 
+              alt="Mecánico Ricardo Mobil Alchisa" 
+              className="w-32 h-36 object-cover object-top rounded-2xl shadow-lg border-2 border-blue-600/20 mx-auto"
+            />
+          </div>
 
-          <div className="text-4xl">🔷</div>
-          <h1 className="font-display font-extrabold text-2xl tracking-tight text-[#37352F]">
-            DENUE PV
-          </h1>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <h1 className="font-display font-extrabold text-2xl tracking-tight text-[#37352F]">
+              DENUE CONSUMIDOR
+            </h1>
+          </div>
           <p className="text-xs text-[#7C7B77] max-w-xs mx-auto">
             Plataforma interna de prospección comercial y control de ventas para Alchisa.
           </p>
         </div>
 
-        {/* SECTION A: COLLAPSIBLE CREDENTIALS GEAR CONFIG */}
-        {showSettings && (
-          <div className="p-4 bg-neutral-50 border border-[#EAEAEA] rounded-xl space-y-3 animate-in slide-in-from-top-2 duration-200">
-            
-            {/* Settings Inner Tabs */}
-            <div className="flex border-b border-[#EAEAEA] pb-2 mb-2 text-[10px] font-bold text-[#7C7B77]">
-              <button
-                type="button"
-                onClick={() => setSettingsTab('google')}
-                className={`flex-1 text-center pb-1 border-b-2 ${
-                  settingsTab === 'google' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-[#37352F]'
-                } cursor-pointer`}
-              >
-                Google Auth
-              </button>
-              <button
-                type="button"
-                onClick={() => setSettingsTab('firebase')}
-                className={`flex-1 text-center pb-1 border-b-2 ${
-                  settingsTab === 'firebase' ? 'border-blue-600 text-blue-700' : 'border-transparent hover:text-[#37352F]'
-                } cursor-pointer`}
-              >
-                Firebase DB
-              </button>
-            </div>
-
-            {saveSuccess && (
-              <div className="p-2 bg-emerald-50 border border-emerald-250 rounded text-emerald-700 text-[10px] font-semibold flex items-center gap-1.5">
-                <RefreshCw className="w-3 h-3 text-emerald-600 animate-spin" />
-                Guardado. Sincronizando...
-              </div>
-            )}
-
-            {settingsTab === 'google' ? (
-              <form onSubmit={handleSaveClientId} className="space-y-2">
-                <div className="space-y-1">
-                  <span className="text-[9px] text-[#7C7B77] block leading-normal">
-                    Pega tu Client ID obtenido de Google Cloud Console. Recuerda autorizar el origen <code className="bg-neutral-200 px-1 py-0.5 rounded font-mono">http://localhost:3001</code> en la consola.
-                  </span>
-                </div>
-                <input
-                  type="text"
-                  required
-                  value={tempClientId}
-                  onChange={(e) => setTempClientId(e.target.value)}
-                  placeholder="Ej. xxxxxxxx-xxxxxx.apps.googleusercontent.com"
-                  className="w-full px-2.5 py-1.5 bg-white border border-[#EAEAEA] rounded-lg text-[9px] font-mono focus:outline-none focus:border-blue-600"
-                />
-
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    Guardar
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResetClientId}
-                    className="px-2.5 py-1.5 bg-white hover:bg-neutral-100 border border-[#EAEAEA] text-[#7C7B77] rounded-lg text-[10px] font-semibold transition-all cursor-pointer"
-                  >
-                    Restaurar
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <form onSubmit={handleSaveFirebaseConfig} className="space-y-2">
-                <div className="space-y-1">
-                  <span className="text-[9px] text-[#7C7B77] block leading-normal">
-                    Pega tu objeto de configuración de Firebase en formato JSON:
-                  </span>
-                </div>
-                <textarea
-                  rows={4}
-                  required
-                  value={firebaseConfigInput}
-                  onChange={(e) => setFirebaseConfigInput(e.target.value)}
-                  placeholder='{
-  "apiKey": "AIzaSy...",
-  "authDomain": "...",
-  "projectId": "..."
-}'
-                  className="w-full px-2.5 py-1.5 bg-white border border-[#EAEAEA] rounded-lg text-[9px] font-mono focus:outline-none focus:border-blue-600 resize-none"
-                />
-
-                <div className="flex gap-2">
-                  <button
-                    type="submit"
-                    className="flex-1 py-1.5 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-[10px] font-semibold flex items-center justify-center gap-1 transition-all cursor-pointer"
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    Conectar Nube
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleResetFirebaseConfig}
-                    className="px-2.5 py-1.5 bg-white hover:bg-neutral-100 border border-[#EAEAEA] text-[#7C7B77] rounded-lg text-[10px] font-semibold transition-all cursor-pointer"
-                  >
-                    Desconectar
-                  </button>
-                </div>
-              </form>
-            )}
-          </div>
-        )}
-
-        {/* SECTION B: ACTIVE OFFICIAL GOOGLE SIGN-IN BUTTON */}
+        {/* ACTIVE OFFICIAL GOOGLE SIGN-IN BUTTON */}
         <div className="space-y-4 flex flex-col items-center pt-2">
           <div className="text-[10px] uppercase font-bold text-[#7C7B77] tracking-wider flex items-center gap-1.5">
             Ingreso Seguro de Personal
@@ -258,9 +73,14 @@ export default function LoginPage({ onFirebaseGoogleLogin }: LoginPageProps) {
 
       </div>
 
-      <footer className="mt-8 text-[9px] text-[#7C7B77] flex items-center gap-1.5">
-        <LogIn className="w-3 h-3" />
-        Seguridad de Datos Alchisa.
+      <footer className="mt-8 text-[9px] text-[#A0A09C] flex flex-col items-center gap-1 select-none">
+        <div className="flex items-center gap-1.5 text-[#7C7B77]">
+          <LogIn className="w-3 h-3" />
+          Seguridad de Datos Alchisa.
+        </div>
+        <span className="text-[8px] text-neutral-400 font-medium tracking-wide">
+          Designed by Alan Olivares C.
+        </span>
       </footer>
 
     </div>

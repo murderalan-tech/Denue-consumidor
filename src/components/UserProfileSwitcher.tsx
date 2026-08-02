@@ -19,9 +19,18 @@ export default function UserProfileSwitcher({ currentUser, onLogout }: UserProfi
         className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-[#EFEFED] transition-colors text-left cursor-pointer"
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-semibold shadow-xs shrink-0">
-            {currentUser.nombre.charAt(0)}
-          </div>
+          {currentUser.fotoUrl ? (
+            <img
+              src={currentUser.fotoUrl}
+              alt={currentUser.nombre}
+              className="w-8 h-8 rounded-full object-cover shadow-xs border border-[#EAEAEA] shrink-0"
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-blue-700 flex items-center justify-center text-white text-xs font-semibold shadow-xs shrink-0">
+              {currentUser.nombre.charAt(0)}
+            </div>
+          )}
           <div className="min-w-0">
             <span className="block text-xs font-bold text-[#37352F] truncate leading-tight">
               {currentUser.nombre}

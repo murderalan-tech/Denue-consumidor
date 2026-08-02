@@ -3,9 +3,9 @@ import { Asesor, Empresa, PlanTrabajo } from '../types';
 export const SEED_ASESORES: Asesor[] = [
   {
     id: "admin_alan_id",
-    nombre: "Alan Olivares (Admin)",
+    nombre: "Alan Olivares",
     correoGoogle: "alan.olivares@alchisa.com",
-    rol: "administrador"
+    rol: "asesor"
   },
   {
     id: "admin_murder_id",

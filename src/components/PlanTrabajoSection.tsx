@@ -7,7 +7,8 @@ import {
   CheckCircle2, 
   Clock, 
   ExternalLink,
-  User
+  User,
+  Download
 } from 'lucide-react';
 import { Empresa, Asesor, PlanTrabajo } from '../types';
 import { 
@@ -24,6 +25,25 @@ interface PlanTrabajoSectionProps {
   onDataChange: () => void;
 }
 
+const MARCAS_OPCIONES = [
+  'Mobil Americano',
+  'Shell',
+  'Quaker State',
+  'Motul',
+  'Roshfrans',
+  'Valvoline',
+  'Chevron',
+  'Motorcraft',
+  'Total',
+  'Otro'
+];
+
+const MOTIVOS_NO_OPORTUNIDAD = [
+  'No se encontro al encargado',
+  'No Interesado',
+  'No contamos con el producto necesitado'
+];
+
 export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTrabajoSectionProps) {
   const [empresas, setEmpresas] = useState<Empresa[]>([]);
   const [activePlans, setActivePlans] = useState<PlanTrabajo[]>([]);
@@ -32,30 +52,53 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
   const isAdmin = currentUser.rol === 'administrador';
   const asesores = getAsesores();
 
+  // Helper to calculate days in plan
+  const getDaysInPlan = (fechaInicio?: string) => {
+    if (!fechaInicio) return 0;
+    const start = new Date(fechaInicio).getTime();
+    const now = new Date().getTime();
+    const diff = Math.max(0, now - start);
+    return Math.floor(diff / (1000 * 60 * 60 * 24));
+  };
+
   // Load companies and active plans
   const loadData = () => {
     const allEmpresas = getEmpresas();
     const allPlans = getPlanTrabajo();
     
-    // Filter companies: only prospecto_validado
-    let validEmpresas = allEmpresas.filter(e => e.estatus === 'prospecto_validado');
+    // Filter companies: only prospecto_validado, ONLY refaccionaria or taller_mecanico, AND MUST HAVE AN ASSIGNED ADVISOR (asesorId !== null)
+    let validEmpresas = allEmpresas.filter(e => 
+      e.estatus === 'prospecto_validado' && 
+      (e.giro === 'refaccionaria' || e.giro === 'taller_mecanico') &&
+      e.asesorId !== null
+    );
     
-    // Role filter
+    // Role filter for left column candidate companies
     if (!isAdmin) {
       validEmpresas = validEmpresas.filter(e => e.asesorId === currentUser.id);
     }
     
     setEmpresas(validEmpresas);
 
-    // Filter plans that correspond to these valid companies
-    const validEmpresasIds = new Set(validEmpresas.map(e => e.id));
-    const filteredPlans = allPlans.filter(p => validEmpresasIds.has(p.empresaId));
+    // Active plans: filter plans for valid companies (if non-admin, filter by user's assigned companies)
+    let filteredPlans = allPlans;
+    if (!isAdmin) {
+      const userEmpresaIds = new Set(validEmpresas.map(e => e.id));
+      filteredPlans = allPlans.filter(p => userEmpresaIds.has(p.empresaId));
+    }
     setActivePlans(filteredPlans);
 
     // Populate editing states
     const editStates: Record<string, PlanTrabajo> = {};
     filteredPlans.forEach(p => {
-      editStates[p.empresaId] = { ...p };
+      let marcas = p.marcasCompetencia;
+      if (!marcas && p.marcaCompetencia) {
+        marcas = p.marcaCompetencia.split(',').map(s => s.trim()).filter(Boolean);
+      }
+      editStates[p.empresaId] = {
+        ...p,
+        marcasCompetencia: marcas || []
+      };
     });
     setEditingPlans(editStates);
   };
@@ -66,14 +109,17 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
 
   // Add a company to the active plan of work
   const handleAddToPlan = (empresaId: string) => {
-    const existing = activePlans.find(p => p.empresaId === empresaId);
+    const allPlans = getPlanTrabajo();
+    const existing = allPlans.find(p => p.empresaId === empresaId);
     if (existing) return;
 
     const newPlan: PlanTrabajo = {
       id: `plan_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
       empresaId,
+      fechaInicio: new Date().toISOString(),
       visitado: false,
       linkCrm360: '',
+      marcasCompetencia: [],
       marcaCompetencia: '',
       oportunidadCreada: false,
       linkOportunidad360: '',
@@ -99,8 +145,10 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
       const plan = prev[empresaId] || {
         id: `plan_${Date.now()}`,
         empresaId,
+        fechaInicio: new Date().toISOString(),
         visitado: false,
         linkCrm360: '',
+        marcasCompetencia: [],
         marcaCompetencia: '',
         oportunidadCreada: false,
         linkOportunidad360: '',
@@ -118,14 +166,52 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
     });
   };
 
+  // Handle competitor brand checkbox toggles
+  const handleBrandToggle = (empresaId: string, brand: string) => {
+    setEditingPlans(prev => {
+      const plan = prev[empresaId] || {
+        id: `plan_${Date.now()}`,
+        empresaId,
+        fechaInicio: new Date().toISOString(),
+        visitado: false,
+        linkCrm360: '',
+        marcasCompetencia: [],
+        marcaCompetencia: '',
+        oportunidadCreada: false,
+        linkOportunidad360: '',
+        motivoNoOportunidad: '',
+        cicloCompletado: false
+      };
+
+      const currentBrands = plan.marcasCompetencia || [];
+      const updatedBrands = currentBrands.includes(brand)
+        ? currentBrands.filter(b => b !== brand)
+        : [...currentBrands, brand];
+
+      return {
+        ...prev,
+        [empresaId]: {
+          ...plan,
+          marcasCompetencia: updatedBrands,
+          marcaCompetencia: updatedBrands.join(', ')
+        }
+      };
+    });
+  };
+
   // Save the work plan card
-  const handleSavePlan = (empresaId: string) => {
+  const handleSavePlan = (empresaId: string, cycleReady: boolean = false) => {
     const plan = editingPlans[empresaId];
-    if (plan) {
-      savePlanTrabajo(plan);
-      loadData();
-      onDataChange();
+    if (!plan) return;
+
+    if (cycleReady) {
+      const confirmed = window.confirm('\u00bfYa Terminaste de Prospectar esta Empresa?\n\nAl confirmar, se concluirá el ciclo de prospección y la empresa se marcará como PROSPECTADO.');
+      if (!confirmed) return;
     }
+
+    savePlanTrabajo(plan);
+    loadData();
+    onDataChange();
   };
 
   const getAsesorName = (empresa: Empresa) => {
@@ -135,8 +221,145 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
   };
 
   // Candidates for plan (validated prospects not yet added to active plan)
-  const activePlanEmpresaIds = new Set(activePlans.map(p => p.empresaId));
+  const allActivePlans = getPlanTrabajo();
+  const activePlanEmpresaIds = new Set(allActivePlans.map(p => p.empresaId));
   const planCandidates = empresas.filter(e => !activePlanEmpresaIds.has(e.id));
+
+  // Export CSV function
+  const handleExportCSV = () => {
+    const allPlans = getPlanTrabajo();
+    const allEmpresas = getEmpresas();
+    const allAsesores = getAsesores();
+
+    // --- Part 1: Active plans (in plan_trabajo collection) ---
+    const exportActivePlans = isAdmin 
+      ? allPlans 
+      : allPlans.filter(p => {
+          const emp = allEmpresas.find(e => e.id === p.empresaId);
+          return emp?.asesorId === currentUser.id;
+        });
+
+    // --- Part 2: Completed companies (estatus === 'prospectado', no longer in active plans) ---
+    const activePlanIds = new Set(allPlans.map(p => p.empresaId));
+    let prospectadoEmpresas = allEmpresas.filter(e =>
+      e.estatus === 'prospectado' &&
+      (e.giro === 'refaccionaria' || e.giro === 'taller_mecanico') &&
+      !activePlanIds.has(e.id)
+    );
+    if (!isAdmin) {
+      prospectadoEmpresas = prospectadoEmpresas.filter(e => e.asesorId === currentUser.id);
+    }
+
+    // Headers
+    const headers = [
+      'Empresa',
+      'Giro',
+      'Dirección',
+      'Asesor',
+      'Enlace CRM L360',
+      'Marcas Competencia',
+      '¿Oportunidad Creada?',
+      'Enlace Oportunidad L360',
+      'Motivo No Oportunidad',
+      'Fecha Inicio (Agregado)',
+      'Días en Plan',
+      'Veces Agregada al Plan',
+      'Ciclo',
+      'Fecha Fin (Concluido)'
+    ];
+
+    // Build rows for active plans
+    const activeRows = exportActivePlans.map(plan => {
+      const currentPlanState = editingPlans[plan.empresaId] || plan;
+      const emp = allEmpresas.find(e => e.id === plan.empresaId);
+      const asesor = emp?.asesorId ? allAsesores.find(a => a.id === emp.asesorId) : null;
+      const marcasArr = currentPlanState.marcasCompetencia || 
+        (currentPlanState.marcaCompetencia ? currentPlanState.marcaCompetencia.split(',').map(s => s.trim()) : []);
+      const marcasStr = marcasArr.join('; ');
+      const fechaInicioStr = currentPlanState.fechaInicio 
+        ? new Date(currentPlanState.fechaInicio).toLocaleDateString('es-MX') : '';
+      const fechaFinStr = currentPlanState.fechaFin 
+        ? new Date(currentPlanState.fechaFin).toLocaleDateString('es-MX') : '';
+      const diasEnPlan = getDaysInPlan(currentPlanState.fechaInicio);
+      const vecesAgregada = emp?.vecesAgregadoAlPlan || 1;
+      const cicloStatus = currentPlanState.cicloCompletado || emp?.estatus === 'prospectado' 
+        ? 'Concluido' : 'En proceso';
+
+      return [
+        `"${(emp?.nombre || '').replace(/"/g, '""')}"`,
+        `"${(emp?.giro || '').replace(/_/g, ' ')}"`,
+        `"${(emp?.direccion || '').replace(/"/g, '""')}"`,
+        `"${(asesor?.nombre || 'Sin asesor').replace(/"/g, '""')}"`,
+        `"${(currentPlanState.linkCrm360 || '').replace(/"/g, '""')}"`,
+        `"${marcasStr.replace(/"/g, '""')}"`,
+        currentPlanState.oportunidadCreada ? 'Sí' : 'No',
+        `"${(currentPlanState.linkOportunidad360 || '').replace(/"/g, '""')}"`,
+        `"${(currentPlanState.motivoNoOportunidad || '').replace(/"/g, '""')}"`,
+        `"${fechaInicioStr}"`,
+        `"${diasEnPlan}"`,
+        `"${vecesAgregada}"`,
+        `"${cicloStatus}"`,
+        `"${fechaFinStr}"`
+      ].join(',');
+    });
+
+    // Build rows for completed (prospectado) companies
+    const completedRows = prospectadoEmpresas.map(emp => {
+      const asesor = emp.asesorId ? allAsesores.find(a => a.id === emp.asesorId) : null;
+      const marcasStr = emp.marcaCompetencia || '';
+      const vecesAgregada = emp.vecesAgregadoAlPlan || 1;
+
+      // Use historical plan fields saved when the cycle was completed
+      const linkCrm = emp.planLinkCrm360 || emp.linkCrm360 || '';
+      const oportunidadCreada = emp.planOportunidadCreada;
+      const linkOportunidad = emp.planLinkOportunidad360 || '';
+      const motivoNoOportunidad = emp.planMotivoNoOportunidad || '';
+      const fechaInicioStr = emp.planFechaInicio 
+        ? new Date(emp.planFechaInicio).toLocaleDateString('es-MX') : '';
+      const fechaFinStr = emp.planFechaFin 
+        ? new Date(emp.planFechaFin).toLocaleDateString('es-MX') 
+        : (emp.fechaActualizacion ? new Date(emp.fechaActualizacion).toLocaleDateString('es-MX') : '');
+
+      // Calculate days in plan from fechaInicio to fechaFin (or today)
+      let diasEnPlan = '';
+      if (emp.planFechaInicio) {
+        const start = new Date(emp.planFechaInicio).getTime();
+        const end = emp.planFechaFin ? new Date(emp.planFechaFin).getTime() : Date.now();
+        diasEnPlan = String(Math.max(0, Math.floor((end - start) / (1000 * 60 * 60 * 24))));
+      }
+
+      return [
+        `"${(emp.nombre || '').replace(/"/g, '""')}"`,
+        `"${(emp.giro || '').replace(/_/g, ' ')}"`,
+        `"${(emp.direccion || '').replace(/"/g, '""')}"`,
+        `"${(asesor?.nombre || 'Sin asesor').replace(/"/g, '""')}"`,
+        `"${linkCrm.replace(/"/g, '""')}"`,
+        `"${marcasStr.replace(/"/g, '""')}"`,
+        oportunidadCreada === true ? 'Sí' : oportunidadCreada === false ? 'No' : '',
+        `"${linkOportunidad.replace(/"/g, '""')}"`,
+        `"${motivoNoOportunidad.replace(/"/g, '""')}"`,
+        `"${fechaInicioStr}"`,
+        `"${diasEnPlan}"`,
+        `"${vecesAgregada}"`,
+        'Concluido',
+        `"${fechaFinStr}"`
+      ].join(',');
+    });
+
+    const allRows = [...activeRows, ...completedRows];
+    const csvContent = '\uFEFF' + [headers.join(','), ...allRows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `reporte_plan_trabajo_${new Date().toISOString().slice(0,10)}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    }, 100);
+  };
 
   return (
     <div className="flex-1 flex flex-col lg:flex-row gap-5 h-[calc(100vh-80px)] overflow-hidden">
@@ -156,7 +379,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
           {planCandidates.length === 0 ? (
             <div className="py-20 text-center text-xs text-[#7C7B77] bg-white border border-[#EAEAEA] rounded-lg">
               <ClipboardList className="w-8 h-8 text-neutral-300 mx-auto mb-2" />
-              <span>No hay prospectos validados listos para prospección.</span>
+              <span>No hay prospectos validados (Refaccionarias/Talleres) listos.</span>
             </div>
           ) : (
             planCandidates.map(emp => (
@@ -203,9 +426,14 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
               Plan de Trabajo Activo ({activePlans.length})
             </h3>
           </div>
-          <span className="text-[10px] text-[#7C7B77]">
-            Registra el avance y oportunidades
-          </span>
+          
+          <button
+            onClick={handleExportCSV}
+            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Descargar Reporte CSV
+          </button>
         </div>
 
         {/* Work plan Cards container */}
@@ -225,6 +453,14 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
 
               const editPlan = editingPlans[plan.empresaId] || plan;
               const isSaved = JSON.stringify(plan) === JSON.stringify(editPlan);
+
+              // Determine if all fields are filled and cycle is ready to complete
+              const crmFilled = !!editPlan.linkCrm360?.trim();
+              const marcasFilled = (editPlan.marcasCompetencia && editPlan.marcasCompetencia.length > 0) || !!editPlan.marcaCompetencia?.trim();
+              const opportunityDetailsFilled = editPlan.oportunidadCreada
+                ? !!editPlan.linkOportunidad360?.trim()
+                : !!editPlan.motivoNoOportunidad?.trim();
+              const isCycleReady = editPlan.visitado && crmFilled && marcasFilled && opportunityDetailsFilled;
 
               return (
                 <div 
@@ -262,6 +498,31 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                     </span>
                     <h4 className="font-display font-bold text-sm text-[#37352F] mt-1.5">{emp.nombre}</h4>
                     <p className="text-[10px] text-[#7C7B77]">{emp.direccion}</p>
+                    
+                    {/* Fecha de inicio, días transcurridos y veces agregada al plan */}
+                    {editPlan.fechaInicio && (
+                      <div className="flex flex-wrap items-center gap-2.5 text-[10px] text-neutral-500 font-medium pt-1">
+                        <span>📅 Agregado al plan: <strong className="text-neutral-700">{new Date(editPlan.fechaInicio).toLocaleDateString('es-MX')}</strong></span>
+                        
+                        {(() => {
+                          const days = getDaysInPlan(editPlan.fechaInicio);
+                          const isOverOneWeek = days >= 7;
+                          return (
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full font-bold border transition-colors ${
+                              isOverOneWeek
+                                ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
+                                : 'bg-blue-50 text-blue-700 border-blue-100'
+                            }`}>
+                              ⏳ {days} {days === 1 ? 'día' : 'días'} en plan
+                            </span>
+                          );
+                        })()}
+
+                        <span className="inline-flex items-center px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-bold">
+                          🔄 {emp.vecesAgregadoAlPlan || 1} {(!emp.vecesAgregadoAlPlan || emp.vecesAgregadoAlPlan === 1) ? 'vez agregada' : 'veces agregada'}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Plan Inputs Grid Form */}
@@ -276,7 +537,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                           type="checkbox"
                           checked={editPlan.visitado}
                           onChange={(e) => handleFieldChange(emp.id, 'visitado', e.target.checked)}
-                          className="w-4 h-4 rounded border-[#CCCCCC] text-blue-700 focus:ring-blue-500"
+                          className="w-4 h-4 rounded border-[#CCCCCC] text-blue-700 focus:ring-blue-500 cursor-pointer"
                         />
                         <span className="text-xs font-semibold text-[#37352F]">
                           Establecimiento Visitado
@@ -309,18 +570,27 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                         </div>
                       </div>
 
-                      {/* Competitor Brand */}
-                      <div className="space-y-1">
+                      {/* Competitor Brand Checkboxes */}
+                      <div className="space-y-1.5">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77] block">
-                          Marca de la Competencia en Sitio
+                          Marcas de la Competencia en Sitio
                         </label>
-                        <input
-                          type="text"
-                          placeholder="Ej. Roshfrans, Castrol, Chevron..."
-                          value={editPlan.marcaCompetencia || ''}
-                          onChange={(e) => handleFieldChange(emp.id, 'marcaCompetencia', e.target.value)}
-                          className="w-full px-3 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
-                        />
+                        <div className="grid grid-cols-2 gap-1.5 p-2 bg-[#F9F9F8] border border-[#EAEAEA] rounded-lg max-h-36 overflow-y-auto custom-scrollbar">
+                          {MARCAS_OPCIONES.map(brand => {
+                            const isChecked = (editPlan.marcasCompetencia || []).includes(brand);
+                            return (
+                              <label key={brand} className="flex items-center gap-1.5 text-[11px] text-[#37352F] cursor-pointer hover:bg-neutral-200/50 p-1 rounded transition-colors select-none">
+                                <input 
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => handleBrandToggle(emp.id, brand)}
+                                  className="w-3.5 h-3.5 rounded border-neutral-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                                />
+                                <span className="truncate">{brand}</span>
+                              </label>
+                            );
+                          })}
+                        </div>
                       </div>
 
                     </div>
@@ -386,18 +656,26 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                           </div>
                         </div>
                       ) : (
-                        // Conditional Motivo no oportunidad
+                        // Conditional Motivo no oportunidad Select Dropdown
                         <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
                           <label className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77] block">
                             Motivo por el cual no se creó
                           </label>
-                          <textarea
-                            placeholder="Describa el motivo..."
-                            rows={2}
+                          <select
                             value={editPlan.motivoNoOportunidad || ''}
                             onChange={(e) => handleFieldChange(emp.id, 'motivoNoOportunidad', e.target.value)}
-                            className="w-full px-3 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none resize-none"
-                          />
+                            className="w-full px-3 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none cursor-pointer"
+                          >
+                            <option value="">-- Seleccionar motivo --</option>
+                            {MOTIVOS_NO_OPORTUNIDAD.map(motivo => (
+                              <option key={motivo} value={motivo}>{motivo}</option>
+                            ))}
+                          </select>
+                          {editPlan.motivoNoOportunidad === 'No se encontro al encargado' && (
+                            <p className="text-[9px] text-amber-600 font-medium pt-1">
+                              * Al guardar, la empresa regresará a la lista de prospectos validados identificando que ya fue visitada.
+                            </p>
+                          )}
                         </div>
                       )}
 
@@ -408,16 +686,32 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                   {/* Save changes triggers */}
                   <div className="flex justify-end pt-3 border-t border-[#F1F1EF]">
                     <button
-                      onClick={() => handleSavePlan(emp.id)}
-                      disabled={isSaved}
+                      onClick={() => handleSavePlan(emp.id, isCycleReady)}
+                      disabled={isSaved && !isCycleReady}
                       className={`px-4 py-1.8 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all shadow-2xs ${
-                        isSaved 
-                          ? 'bg-neutral-100 text-[#7C7B77] cursor-default border border-neutral-200' 
-                          : 'bg-blue-700 hover:bg-blue-800 text-white cursor-pointer active:scale-95'
+                        isCycleReady
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white cursor-pointer active:scale-95 ring-2 ring-emerald-300 ring-offset-1 animate-pulse'
+                          : isSaved
+                            ? 'bg-neutral-100 text-[#7C7B77] cursor-default border border-neutral-200'
+                            : 'bg-blue-700 hover:bg-blue-800 text-white cursor-pointer active:scale-95'
                       }`}
                     >
-                      <Save className="w-3.5 h-3.5" />
-                      {isSaved ? 'Seguimiento Guardado' : 'Guardar Seguimiento'}
+                      {isCycleReady ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          Concluir Ciclo
+                        </>
+                      ) : isSaved ? (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          Seguimiento Guardado
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3.5 h-3.5" />
+                          Guardar Seguimiento
+                        </>
+                      )}
                     </button>
                   </div>
 

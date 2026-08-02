@@ -55,6 +55,42 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
 
   const globalCycle = getCycleStats();
 
+  // 4. Calculate Hit Rate Opp (Oportunidades Creadas / Empresas con Ciclo Concluido * 100)
+  const getHitRateOppStats = (giro: 'refaccionaria' | 'taller_mecanico' | 'gasolinera') => {
+    const prospectadas = filteredEmpresas.filter(e => e.estatus === 'prospectado' && e.giro === giro);
+    const giroEmpresas = filteredEmpresas.filter(e => e.giro === giro);
+    const giroEmpresaIds = new Set(giroEmpresas.map(e => e.id));
+    const completedActivePlans = allPlans.filter(p => giroEmpresaIds.has(p.empresaId) && p.cicloCompletado);
+
+    let totalConcluidas = 0;
+    let oportunidadesCreadas = 0;
+
+    prospectadas.forEach(e => {
+      totalConcluidas++;
+      if (e.planOportunidadCreada === true) {
+        oportunidadesCreadas++;
+      }
+    });
+
+    const prospectadaIds = new Set(prospectadas.map(e => e.id));
+    completedActivePlans.forEach(p => {
+      if (!prospectadaIds.has(p.empresaId)) {
+        totalConcluidas++;
+        if (p.oportunidadCreada === true) {
+          oportunidadesCreadas++;
+        }
+      }
+    });
+
+    const hitRate = totalConcluidas > 0 ? Math.round((oportunidadesCreadas / totalConcluidas) * 100) : 0;
+
+    return {
+      totalConcluidas,
+      oportunidadesCreadas,
+      hitRate
+    };
+  };
+
   // Giro summaries
   const giros: Array<{ id: 'refaccionaria' | 'taller_mecanico' | 'gasolinera'; label: string; icon: any }> = [
     { id: 'refaccionaria', label: 'Refaccionarias', icon: Building },
@@ -162,6 +198,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
         
         {giros.map((giroInfo) => {
           const stats = getCycleStats(giroInfo.id);
+          const hitRateStats = getHitRateOppStats(giroInfo.id);
           const totalInGiro = filteredEmpresas.filter(e => e.giro === giroInfo.id).length;
 
           if (totalInGiro === 0) return null;
@@ -178,13 +215,22 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
                   </h4>
                 </div>
                 
-                {/* Progress bar cycle completed */}
-                {stats.total > 0 && (
-                  <div className="flex items-center gap-2 text-[10px] text-[#7C7B77] font-semibold bg-neutral-50 px-2.5 py-1 rounded border border-[#EAEAEA]">
-                    <span>Prospección concluida:</span>
-                    <span className="text-indigo-600 font-bold">{stats.completed}/{stats.total} ({stats.percentage}%)</span>
+                <div className="flex flex-wrap items-center gap-2">
+                  {/* Progress bar cycle completed */}
+                  {stats.total > 0 && (
+                    <div className="flex items-center gap-2 text-[10px] text-[#7C7B77] font-semibold bg-neutral-50 px-2.5 py-1 rounded border border-[#EAEAEA]">
+                      <span>Prospección concluida:</span>
+                      <span className="text-indigo-600 font-bold">{stats.completed}/{stats.total} ({stats.percentage}%)</span>
+                    </div>
+                  )}
+
+                  {/* Hit Rate Opp Pill */}
+                  <div className="flex items-center gap-1.5 text-[10px] bg-emerald-50 text-emerald-800 font-bold px-2.5 py-1 rounded border border-emerald-200">
+                    <span>Hit Rate Opp:</span>
+                    <span className="text-emerald-700 font-extrabold">{hitRateStats.hitRate}%</span>
+                    <span className="text-[9px] font-normal text-emerald-600">({hitRateStats.oportunidadesCreadas}/{hitRateStats.totalConcluidas})</span>
                   </div>
-                )}
+                </div>
               </div>
 
               {/* Grid: Left - Status counts, Right - Completion progress details */}
@@ -223,32 +269,49 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
                   </div>
                 </div>
 
-                {/* Progress cycle visualization */}
+                {/* Progress cycle & Hit Rate Opp visualization */}
                 <div className="space-y-4 bg-[#FBFBFA]/80 border border-[#EAEAEA] p-5 rounded-xl flex flex-col justify-between">
                   <div className="space-y-2">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77] block">
-                      Avance de Ciclo de Prospección
+                      Ratios de Eficiencia Comercial
                     </span>
                     <p className="text-[11px] text-[#7C7B77] leading-relaxed">
-                      El ciclo se concluye cuando el prospecto validado cuenta con registro de CRM L360, marca competidora y estatus de oportunidad (link o motivo).
+                      El <strong>Hit Rate Opp</strong> mide la tasa de éxito al convertir prospectos con ciclo concluido en oportunidades comerciales creadas en L360.
+                    </p>
+                  </div>
+
+                  {/* Hit Rate Opp Highlight Card */}
+                  <div className="bg-emerald-50/60 border border-emerald-200/80 p-3.5 rounded-lg space-y-2">
+                    <div className="flex justify-between items-center text-xs font-bold text-emerald-900">
+                      <span>🎯 Hit Rate Opp</span>
+                      <span className="text-emerald-700 font-extrabold text-base">{hitRateStats.hitRate}%</span>
+                    </div>
+                    <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-emerald-600 transition-all duration-500"
+                        style={{ width: `${hitRateStats.hitRate}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-emerald-700 font-medium">
+                      {hitRateStats.oportunidadesCreadas} oportunidades creadas de {hitRateStats.totalConcluidas} empresas con ciclo concluido
                     </p>
                   </div>
 
                   {stats.total > 0 ? (
-                    <div className="space-y-3 pt-2">
+                    <div className="space-y-3 pt-1 border-t border-[#EAEAEA]">
                       <div className="flex justify-between items-end text-xs font-semibold">
-                        <span className="text-[#37352F]">Avance de Trabajo</span>
+                        <span className="text-[#37352F]">Avance de Trabajo en Plan</span>
                         <span className="text-indigo-600 font-extrabold text-sm">{stats.percentage}%</span>
                       </div>
                       
-                      <div className="h-3 w-full bg-[#EAEAEA] rounded-full overflow-hidden">
+                      <div className="h-2.5 w-full bg-[#EAEAEA] rounded-full overflow-hidden">
                         <div 
                           className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500"
                           style={{ width: `${stats.percentage}%` }}
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-2 text-[10px] pt-1 text-[#7C7B77]">
+                      <div className="grid grid-cols-2 gap-2 text-[10px] text-[#7C7B77]">
                         <div className="flex items-center gap-1">
                           <div className="w-2 h-2 rounded-full bg-indigo-600"></div>
                           <span>{stats.completed} Completados</span>
@@ -260,7 +323,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
                       </div>
                     </div>
                   ) : (
-                    <div className="py-6 text-center text-[11px] text-[#7C7B77] border border-dashed border-[#EAEAEA] rounded-lg">
+                    <div className="py-3 text-center text-[11px] text-[#7C7B77] border border-dashed border-[#EAEAEA] rounded-lg">
                       No hay prospectos en estado "Prospecto validado" para analizar.
                     </div>
                   )}

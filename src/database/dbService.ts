@@ -196,7 +196,8 @@ export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
   const updated = localDb.savePlanTrabajo(plan);
   
   if (isCloudActive() && db) {
-    setDoc(doc(db, 'plan_trabajo', plan.id), updated).catch(err => {
+    const cleanPlan = JSON.parse(JSON.stringify(updated));
+    setDoc(doc(db, 'plan_trabajo', plan.id), cleanPlan).catch(err => {
       console.error("Cloud sync failed for savePlanTrabajo:", err);
     });
 
@@ -204,8 +205,11 @@ export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
     getDoc(empDocRef).then(empSnap => {
       if (empSnap.exists()) {
         const current = empSnap.data() as Empresa;
+        const updatedEmp = getEmpresas().find(e => e.id === plan.empresaId);
         setDoc(empDocRef, {
           ...current,
+          estatus: updatedEmp?.estatus || current.estatus,
+          vecesAgregadoAlPlan: updatedEmp?.vecesAgregadoAlPlan || current.vecesAgregadoAlPlan || 1,
           marcaCompetencia: plan.marcaCompetencia,
           fechaActualizacion: new Date().toISOString()
         });
@@ -251,12 +255,41 @@ export function addAsesor(asesor: Asesor): Asesor {
   return updated;
 }
 
+export function updateAsesor(asesor: Asesor): Asesor {
+  const updated = localDb.updateAsesor(asesor);
+
+  if (isCloudActive() && db) {
+    setDoc(doc(db, 'asesores', asesor.id), asesor).catch(err => {
+      console.error("Cloud sync failed for updateAsesor:", err);
+    });
+  }
+
+  return updated;
+}
+
 export function deleteAsesor(id: string): void {
   localDb.deleteAsesor(id);
 
   if (isCloudActive() && db) {
     deleteDoc(doc(db, 'asesores', id)).catch(err => {
       console.error("Cloud delete asesor failed:", err);
+    });
+
+    // Update unassigned companies in Firestore
+    const q = query(collection(db, 'empresas'), where('asesorId', '==', id));
+    getDocs(q).then(snap => {
+      if (!snap.empty) {
+        const batch = writeBatch(db!);
+        snap.forEach(d => {
+          batch.update(d.ref, {
+            asesorId: null,
+            fechaActualizacion: new Date().toISOString()
+          });
+        });
+        batch.commit();
+      }
+    }).catch(err => {
+      console.error("Cloud update unassigned companies failed:", err);
     });
   }
 }
