@@ -26,6 +26,7 @@ interface ParsedCSVRow {
   latitud: number | null;
   longitud: number | null;
   direccion: string;
+  ciudad: string;
   telefono: string;
   contacto: string;
   razonSocial: string;
@@ -48,6 +49,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const [longitud, setLongitud] = useState('');
   const [telefono, setTelefono] = useState('');
   const [contacto, setContacto] = useState('');
+  const [ciudad, setCiudad] = useState('');
   const [grupoGasolinero, setGrupoGasolinero] = useState('');
   const [asesorId, setAsesorId] = useState<string | null>(null);
   
@@ -144,6 +146,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       latitud: parseFloat(latitud),
       longitud: parseFloat(longitud),
       direccion: direccion.trim(),
+      ciudad: ciudad.trim() || undefined,
       telefono: telefono.trim(),
       contacto: contacto.trim(),
       estatus: 'sin_accion',
@@ -158,6 +161,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     setNombre('');
     setRazonSocial('');
     setDireccion('');
+    setCiudad('');
     setLatitud('');
     setLongitud('');
     setTelefono('');
@@ -180,6 +184,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       'Latitud',
       'Longitud',
       'Direccion',
+      'Ciudad',
       'Telefono',
       'Contacto',
       'RazonSocial',
@@ -188,9 +193,9 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     ];
 
     const sampleRows = [
-      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe, Chihuahua, Chih.', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com'],
-      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203, Cd. Juarez, Chih.', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com'],
-      ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500, Chihuahua, Chih.', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex', 'juan.lopez@alchisa.com']
+      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe', 'Chihuahua', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com'],
+      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203', 'Juárez', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com'],
+      ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500', 'Chihuahua', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex', 'juan.lopez@alchisa.com']
     ];
 
     const csvContent = '\uFEFF' + [
@@ -265,11 +270,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
         const latColStr = columns[2] || '';
         const lngColStr = columns[3] || '';
         const dirCol = columns[4] || '';
-        const telCol = columns[5] || '';
-        const contCol = columns[6] || '';
-        const razonCol = columns[7] || '';
-        const groupCol = columns[8] || '';
-        const correoAsesorCol = (columns[9] || '').trim().toLowerCase();
+        const ciudadCol = columns[5] || '';
+        const telCol = columns[6] || '';
+        const contCol = columns[7] || '';
+        const razonCol = columns[8] || '';
+        const groupCol = columns[9] || '';
+        const correoAsesorCol = (columns[10] || '').trim().toLowerCase();
 
         const latVal = parseFloat(latColStr);
         const lngVal = parseFloat(lngColStr);
@@ -306,6 +312,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
           latitud: isNaN(latVal) ? null : latVal,
           longitud: isNaN(lngVal) ? null : lngVal,
           direccion: dirCol,
+          ciudad: ciudadCol,
           telefono: telCol,
           contacto: contCol,
           razonSocial: razonCol || 'N/A',
@@ -336,6 +343,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       latitud: r.latitud!,
       longitud: r.longitud!,
       direccion: r.direccion.trim(),
+      ciudad: r.ciudad.trim() || undefined,
       telefono: r.telefono.trim(),
       contacto: r.contacto.trim(),
       estatus: 'sin_accion',
@@ -518,7 +526,20 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                   required
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
-                  placeholder="Calle, Número, Colonia, Municipio, Chihuahua"
+                  placeholder="Calle, Número, Colonia"
+                  className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
+                  Ciudad
+                </label>
+                <input
+                  type="text"
+                  value={ciudad}
+                  onChange={(e) => setCiudad(e.target.value)}
+                  placeholder="Ej. Chihuahua, Juárez, Cuauhtémoc..."
                   className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                 />
               </div>
