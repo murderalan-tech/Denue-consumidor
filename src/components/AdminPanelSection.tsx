@@ -369,11 +369,16 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     }));
 
     addEmpresasBulk(newEmpresas);
+    const msg = `✅ ¡Carga Masiva Exitosa!\n\nSe han registrado y guardado correctamente ${newEmpresas.length} empresas en la base de datos de DENUE CONSUMIDOR.`;
     setBulkSuccessMsg(`Se importaron con éxito ${newEmpresas.length} empresas a la base de datos.`);
     
     setParsedRows([]);
     setCsvFileName('');
     onDataChange();
+
+    setTimeout(() => {
+      alert(msg);
+    }, 100);
   };
 
   const totalValid = parsedRows.filter(r => r.isValid).length;
