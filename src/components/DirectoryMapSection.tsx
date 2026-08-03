@@ -197,7 +197,6 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
         setVisibleEmpresas(visible);
       };
 
-      mapInstanceRef.current.off('moveend');
       mapInstanceRef.current.on('moveend', handleMoveEnd);
 
       // Fit map bounds to show matches
@@ -210,6 +209,12 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
       } else {
         handleMoveEnd();
       }
+
+      return () => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.off('moveend', handleMoveEnd);
+        }
+      };
     } else {
       setVisibleEmpresas([]);
     }
