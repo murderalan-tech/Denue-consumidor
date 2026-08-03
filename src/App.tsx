@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Menu, User } from 'lucide-react';
 import Sidebar, { SidebarRoute } from './components/Sidebar';
 import DirectoryMapSection from './components/DirectoryMapSection';
 import GasolinerasListSection from './components/GasolinerasListSection';
@@ -54,6 +55,9 @@ export default function App() {
   // Details Sheet Drawer State
   const [selectedEmpresa, setSelectedEmpresa] = useState<Empresa | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  
+  // Mobile Navigation State
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const loadEmpresas = () => {
     setEmpresas(getEmpresas());
@@ -138,17 +142,37 @@ export default function App() {
       {/* Sidebar Navigation */}
       <Sidebar 
         currentRoute={currentRoute}
-        onRouteChange={setCurrentRoute}
+        onRouteChange={(route) => {
+          setCurrentRoute(route);
+          setIsMobileMenuOpen(false);
+        }}
         currentUser={currentUser}
         onUserChange={handleUserChange}
         onLogout={handleLogout}
         isCloudActive={isCloudActive()}
+        isOpen={isMobileMenuOpen}
+        onClose={() => setIsMobileMenuOpen(false)}
       />
 
       {/* Main Workspace Area */}
-      <main className="flex-1 flex flex-col p-6 min-w-0 overflow-hidden bg-white">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-white">
         
-        {/* Conditional Sections */}
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-[#EAEAEA] shrink-0 z-40">
+           <div className="flex items-center gap-2 text-[#37352F] font-bold text-[10px] sm:text-xs uppercase tracking-tight">
+              <div className="p-1.5 bg-blue-700 text-white rounded shadow-sm">
+                <User className="w-3.5 h-3.5" />
+              </div>
+              DENUE CONSUMIDOR
+           </div>
+           <button onClick={() => setIsMobileMenuOpen(true)} className="p-1.5 rounded-md hover:bg-neutral-100 border border-transparent hover:border-neutral-200 transition-colors cursor-pointer">
+             <Menu className="w-5 h-5 text-neutral-600" />
+           </button>
+        </div>
+
+        {/* Content Wrapper */}
+        <div className="flex-1 overflow-hidden flex flex-col p-4 md:p-6 bg-[#FBFBFA]">
+          {/* Conditional Sections */}
         {currentRoute === 'refaccionarias' && (
           <DirectoryMapSection 
             giro="refaccionaria"
@@ -202,7 +226,7 @@ export default function App() {
             onDataChange={loadEmpresas}
           />
         )}
-
+        </div>
       </main>
 
       {/* Slide-out Detail Sidebar Drawer Sheet (Overlay) */}
