@@ -61,6 +61,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const [bulkSuccessMsg, setBulkSuccessMsg] = useState<string | null>(null);
   const [bulkErrorMsg, setBulkErrorMsg] = useState<string | null>(null);
 
+  // Bulk Progress Bar States
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0); // 0 to 100
+  const [uploadedCount, setUploadedCount] = useState(0);
+  const [totalToUpload, setTotalToUpload] = useState(0);
+
   // Admin Form States
   const [adminNombre, setAdminNombre] = useState('');
   const [adminCorreo, setAdminCorreo] = useState('');
@@ -346,7 +352,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     reader.readAsText(file, 'UTF-8');
   };
 
-  // --- SAVE BULK IMPORT ---
+  // --- SAVE BULK IMPORT WITH PROGRESS BAR ---
   const handleCommitBulk = () => {
     const validRows = parsedRows.filter(r => r.isValid);
     if (validRows.length === 0) return;
@@ -368,17 +374,41 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       fechaActualizacion: new Date().toISOString()
     }));
 
-    addEmpresasBulk(newEmpresas);
-    const msg = `✅ ¡Carga Masiva Exitosa!\n\nSe han registrado y guardado correctamente ${newEmpresas.length} empresas en la base de datos de DENUE CONSUMIDOR.`;
-    setBulkSuccessMsg(`Se importaron con éxito ${newEmpresas.length} empresas a la base de datos.`);
-    
-    setParsedRows([]);
-    setCsvFileName('');
-    onDataChange();
+    setIsUploading(true);
+    setUploadProgress(0);
+    setUploadedCount(0);
+    setTotalToUpload(newEmpresas.length);
 
-    setTimeout(() => {
-      alert(msg);
-    }, 100);
+    // Save batch to storage
+    addEmpresasBulk(newEmpresas);
+
+    // Animate progress bar smoothly for visual confirmation
+    let current = 0;
+    const total = newEmpresas.length;
+    const step = Math.max(1, Math.floor(total / 20));
+    
+    const interval = setInterval(() => {
+      current += step;
+      if (current >= total) {
+        current = total;
+        clearInterval(interval);
+        setUploadProgress(100);
+        setUploadedCount(total);
+
+        setTimeout(() => {
+          setIsUploading(false);
+          setBulkSuccessMsg(`Se importaron con éxito ${total} empresas a la base de datos.`);
+          setParsedRows([]);
+          setCsvFileName('');
+          onDataChange();
+
+          alert(`🎉 ¡CARGA MASIVA COMPLETADA CON ÉXITO!\n\nSe procesaron e importaron correctamente ${total} empresas en DENUE CONSUMIDOR.\n\nTodas las ubicaciones ya están disponibles en el catálogo y mapa.`);
+        }, 400);
+      } else {
+        setUploadedCount(current);
+        setUploadProgress(Math.round((current / total) * 100));
+      }
+    }, 40);
   };
 
   const totalValid = parsedRows.filter(r => r.isValid).length;
@@ -733,7 +763,27 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
               </span>
             </div>
 
-            {parsedRows.length > 0 && (
+            {/* Progress Bar Container when Uploading */}
+            {isUploading && (
+              <div className="bg-white border border-blue-200 rounded-xl p-5 shadow-sm space-y-3 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between text-xs font-bold text-[#37352F]">
+                  <span className="flex items-center gap-2 text-blue-700">
+                    <div className="w-4 h-4 border-2 border-blue-700 border-t-transparent rounded-full animate-spin"></div>
+                    Procesando e importando empresas ({uploadedCount} de {totalToUpload})...
+                  </span>
+                  <span className="font-mono text-blue-700 text-sm font-extrabold">{uploadProgress}%</span>
+                </div>
+
+                <div className="w-full h-3 bg-neutral-100 rounded-full overflow-hidden border border-[#EAEAEA]">
+                  <div 
+                    className="h-full bg-blue-700 transition-all duration-150 ease-out rounded-full"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {parsedRows.length > 0 && !isUploading && (
               <div className="bg-white border border-[#EAEAEA] rounded-xl overflow-hidden shadow-xs space-y-4 p-5 animate-in fade-in duration-250">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#EAEAEA]">
                   <div className="flex items-center gap-4 text-xs font-bold text-[#37352F]">
@@ -752,7 +802,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
                   <button
                     onClick={handleCommitBulk}
-                    disabled={totalValid === 0}
+                    disabled={totalValid === 0 || isUploading}
                     className="py-1.8 px-4 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer flex items-center gap-1.5"
                   >
                     <CheckCircle2 className="w-3.5 h-3.5" />
