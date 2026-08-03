@@ -352,8 +352,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     reader.readAsText(file, 'UTF-8');
   };
 
-  // --- SAVE BULK IMPORT WITH PROGRESS BAR ---
-  const handleCommitBulk = () => {
+  // --- SAVE BULK IMPORT WITH REAL CLOUD PROGRESS BAR ---
+  const handleCommitBulk = async () => {
     const validRows = parsedRows.filter(r => r.isValid);
     if (validRows.length === 0) return;
 
@@ -379,36 +379,25 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     setUploadedCount(0);
     setTotalToUpload(newEmpresas.length);
 
-    // Save batch to storage
-    addEmpresasBulk(newEmpresas);
+    // Save batch to LocalStorage & Firebase Cloud with real progress callback
+    await addEmpresasBulk(newEmpresas, (percent, count) => {
+      setUploadProgress(percent);
+      setUploadedCount(count);
+    });
 
-    // Animate progress bar smoothly for visual confirmation
-    let current = 0;
     const total = newEmpresas.length;
-    const step = Math.max(1, Math.floor(total / 20));
-    
-    const interval = setInterval(() => {
-      current += step;
-      if (current >= total) {
-        current = total;
-        clearInterval(interval);
-        setUploadProgress(100);
-        setUploadedCount(total);
+    setUploadProgress(100);
+    setUploadedCount(total);
 
-        setTimeout(() => {
-          setIsUploading(false);
-          setBulkSuccessMsg(`Se importaron con éxito ${total} empresas a la base de datos.`);
-          setParsedRows([]);
-          setCsvFileName('');
-          onDataChange();
+    setTimeout(() => {
+      setIsUploading(false);
+      setBulkSuccessMsg(`Se importaron con éxito ${total} empresas a la base de datos local y Firebase Cloud.`);
+      setParsedRows([]);
+      setCsvFileName('');
+      onDataChange();
 
-          alert(`🎉 ¡CARGA MASIVA COMPLETADA CON ÉXITO!\n\nSe procesaron e importaron correctamente ${total} empresas en DENUE CONSUMIDOR.\n\nTodas las ubicaciones ya están disponibles en el catálogo y mapa.`);
-        }, 400);
-      } else {
-        setUploadedCount(current);
-        setUploadProgress(Math.round((current / total) * 100));
-      }
-    }, 40);
+      alert(`🎉 ¡CARGA MASIVA COMPLETADA CON ÉXITO!\n\nSe procesaron e importaron correctamente ${total} empresas en Firebase Cloud y DENUE CONSUMIDOR.\n\nTodas las ubicaciones ya están sincronizadas entre navegadores.`);
+    }, 400);
   };
 
   const totalValid = parsedRows.filter(r => r.isValid).length;

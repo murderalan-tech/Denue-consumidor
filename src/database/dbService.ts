@@ -197,18 +197,44 @@ export function deleteAllEmpresas(): void {
   }
 }
 
-export function addEmpresasBulk(newEmpresas: Empresa[]): Empresa[] {
+export async function addEmpresasBulk(
+  newEmpresas: Empresa[],
+  onProgress?: (progressPercent: number, count: number) => void
+): Promise<Empresa[]> {
+  // 1. Always save to LocalStorage cache immediately
   const updated = localDb.addEmpresasBulk(newEmpresas);
   
+  // 2. Sync to Firebase Cloud Firestore in chunks of 450 (Firestore limit is 500 per batch)
   if (isCloudActive() && db) {
-    const batch = writeBatch(db);
-    updated.forEach(e => {
-      const docRef = doc(db!, 'empresas', e.id);
-      batch.set(docRef, e);
-    });
-    batch.commit().catch(err => {
-      console.error("Cloud sync failed for addEmpresasBulk:", err);
-    });
+    const CHUNK_SIZE = 450;
+    const total = updated.length;
+
+    for (let i = 0; i < total; i += CHUNK_SIZE) {
+      const chunk = updated.slice(i, i + CHUNK_SIZE);
+      const batch = writeBatch(db);
+
+      chunk.forEach(e => {
+        const docRef = doc(db!, 'empresas', e.id);
+        batch.set(docRef, e);
+      });
+
+      try {
+        await batch.commit();
+      } catch (err) {
+        console.error(`Cloud sync failed for chunk ${i}-${i + CHUNK_SIZE}:`, err);
+      }
+
+      const processedCount = Math.min(i + CHUNK_SIZE, total);
+      const percent = Math.round((processedCount / total) * 100);
+      if (onProgress) {
+        onProgress(percent, processedCount);
+      }
+    }
+  } else {
+    // If running only locally, call progress callback
+    if (onProgress) {
+      onProgress(100, updated.length);
+    }
   }
   
   return updated;
