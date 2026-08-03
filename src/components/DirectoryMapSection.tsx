@@ -14,6 +14,12 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [asesorFilter, setAsesorFilter] = useState<string>('all');
+  const [shouldFitBounds, setShouldFitBounds] = useState(true);
+
+  // When filters change, we want to re-fit the bounds
+  useEffect(() => {
+    setShouldFitBounds(true);
+  }, [giro, searchTerm, statusFilter, asesorFilter]);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -173,11 +179,12 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
       }
 
       // Fit map bounds to show matches
-      if (bounds.length > 0) {
+      if (bounds.length > 0 && shouldFitBounds) {
         mapInstanceRef.current.fitBounds(L.latLngBounds(bounds), {
           padding: [40, 40],
           maxZoom: 14
         });
+        setShouldFitBounds(false); // Only fit bounds once per filter change
       }
     }
   }, [filteredEmpresas]);

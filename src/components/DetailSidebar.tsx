@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Phone, User, Tag, Save, MapPin, RotateCcw } from 'lucide-react';
+import { X, Phone, User, Tag, Save, MapPin, RotateCcw, ClipboardList } from 'lucide-react';
 import { Empresa, Asesor, EstatusPros, ESTATUS_LABELS, GIRO_LABELS } from '../types';
-import { getAsesores, deletePlanTrabajoByEmpresa } from '../database/dbService';
+import { getAsesores, deletePlanTrabajoByEmpresa, getPlanTrabajo, savePlanTrabajo } from '../database/dbService';
 
 interface DetailSidebarProps {
   empresa: Empresa | null;
@@ -67,6 +67,48 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
       onSave(updatedEmpresa);
       onClose();
     }
+  };
+
+  const handleAddToPlan = () => {
+    if (!asesorId) {
+      alert("Debes asignar un Asesor Comercial antes de agregar la empresa al Plan de Trabajo.");
+      return;
+    }
+    
+    // Create or update plan
+    const existingPlans = getPlanTrabajo();
+    // Check if it's already in the plan
+    const alreadyInPlan = existingPlans.some(p => p.empresaId === empresa.id);
+    if (alreadyInPlan) {
+      alert("La empresa ya se encuentra en el Plan de Trabajo.");
+      return;
+    }
+
+    const newPlan = {
+      id: crypto.randomUUID(),
+      empresaId: empresa.id,
+      visitado: false,
+      linkCrm360: '',
+      oportunidadCreada: false,
+      cicloCompletado: false,
+      fechaInicio: new Date().toISOString() // Start tracking days in plan
+    };
+
+    savePlanTrabajo(newPlan);
+    
+    // Increment times added to plan
+    onSave({
+      ...empresa,
+      telefono,
+      contacto,
+      estatus,
+      asesorId,
+      vecesAgregadoAlPlan: (empresa.vecesAgregadoAlPlan || 0) + 1,
+      fechaActualizacion: new Date().toISOString()
+    });
+    
+    alert("¡Empresa agregada al Plan de Trabajo exitosamente!");
+    onClose();
   };
 
   const getAssignedAsesorName = () => {
@@ -273,23 +315,35 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
         </form>
 
         {/* Footer Actions */}
-        <div className="p-6 border-t border-[#EAEAEA] bg-[#F7F7F5] flex gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex-1 py-2 border border-[#EAEAEA] bg-white hover:bg-[#F1F1EF] rounded-lg text-xs text-[#37352F] font-semibold transition-colors cursor-pointer text-center"
-          >
-            Cancelar
-          </button>
-          
-          <button
-            type="submit"
-            onClick={handleSubmit}
-            className="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
-          >
-            <Save className="w-3.5 h-3.5" />
-            Guardar Cambios
-          </button>
+        <div className="p-6 border-t border-[#EAEAEA] bg-[#F7F7F5] flex flex-col gap-3">
+          {estatus === 'prospecto_real' && (
+             <button
+                type="button"
+                onClick={handleAddToPlan}
+                className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition-all shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+             >
+                <ClipboardList className="w-4 h-4" />
+                Agregar al Plan de Trabajo
+             </button>
+          )}
+          <div className="flex gap-3 w-full">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 py-2 border border-[#EAEAEA] bg-white hover:bg-[#F1F1EF] rounded-lg text-xs text-[#37352F] font-semibold transition-colors cursor-pointer text-center"
+            >
+              Cancelar
+            </button>
+            
+            <button
+              type="submit"
+              onClick={handleSubmit}
+              className="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Guardar Cambios
+            </button>
+          </div>
         </div>
 
       </div>
