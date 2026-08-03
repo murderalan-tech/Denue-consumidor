@@ -33,12 +33,12 @@ export interface Empresa {
   asesorId: string | null; // null represents "No asesor"
   grupoGasolinero?: string; // only if giro === 'gasolinera'
   marcaCompetencia?: string; // sync from Plan de Trabajo or filled in plan
-  razonSocial?: string; // optional RazÃ³n Social from DENUE
+  razonSocial?: string; // optional Razón Social from DENUE
   ciudad?: string; // City where the company is located
   linkCrm360?: string; // Lead URL in CRM L360 (used for Gasolineras groups)
   comentariosNoAplica?: string; // Comments why gas station group does not apply
   vecesAgregadoAlPlan?: number; // Number of times added to work plan
-  // Plan history fields â€“ persisted when prospecting cycle completes
+  // Plan history fields – persisted when prospecting cycle completes
   planLinkCrm360?: string;
   planOportunidadCreada?: boolean;
   planLinkOportunidad360?: string;

@@ -1,4 +1,4 @@
-﻿import { LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 
 interface LoginPageProps {
   onFirebaseGoogleLogin: () => void;
@@ -13,11 +13,11 @@ export default function LoginPage({ onFirebaseGoogleLogin }: LoginPageProps) {
         
         {/* Brand Header */}
         <div className="text-center space-y-3 relative flex flex-col items-center">
-          {/* Avatar Ricardo MecÃ¡nico Mobil / Alchisa */}
+          {/* Avatar Ricardo Mecánico Mobil / Alchisa */}
           <div className="relative">
             <img 
               src="/mechanic_avatar.png" 
-              alt="MecÃ¡nico Ricardo Mobil Alchisa" 
+              alt="Mecánico Ricardo Mobil Alchisa" 
               className="w-32 h-36 object-cover object-top rounded-2xl shadow-lg border-2 border-blue-600/20 mx-auto"
             />
           </div>
@@ -28,7 +28,7 @@ export default function LoginPage({ onFirebaseGoogleLogin }: LoginPageProps) {
             </h1>
           </div>
           <p className="text-xs text-[#7C7B77] max-w-xs mx-auto">
-            Plataforma interna de prospecciÃ³n comercial y control de ventas para Alchisa.
+            Plataforma interna de prospección comercial y control de ventas para Alchisa.
           </p>
         </div>
 
@@ -63,11 +63,11 @@ export default function LoginPage({ onFirebaseGoogleLogin }: LoginPageProps) {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span className="font-semibold text-[#3c4043]">Iniciar sesiÃ³n con Google</span>
+            <span className="font-semibold text-[#3c4043]">Iniciar sesión con Google</span>
           </button>
 
           <div className="text-[10px] text-center text-[#7C7B77] max-w-xs leading-normal">
-            AutenticaciÃ³n directa de Google Workspace con correo empresarial Alchisa.
+            Autenticación directa de Google Workspace con correo empresarial Alchisa.
           </div>
         </div>
 

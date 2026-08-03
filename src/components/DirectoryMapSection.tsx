@@ -271,9 +271,9 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
                   <div className="flex justify-between items-center text-[9px] pt-1.5 border-t border-[#F1F1EF] text-[#7C7B77]">
                     <span className="truncate max-w-[120px]">
-                      ðŸ‘¤ {isAdmin ? (asesores.find(a => a.id === emp.asesorId)?.nombre || 'No asesor') : 'TÃº'}
+                      👤 {isAdmin ? (asesores.find(a => a.id === emp.asesorId)?.nombre || 'No asesor') : 'Tú'}
                     </span>
-                    {emp.telefono && <span className="shrink-0">ðŸ“ž Activo</span>}
+                    {emp.telefono && <span className="shrink-0">📞 Activo</span>}
                   </div>
                 </div>
               );

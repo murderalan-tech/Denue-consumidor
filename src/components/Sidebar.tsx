@@ -1,4 +1,4 @@
-﻿import { 
+import { 
   Wrench, 
   Settings, 
   Fuel, 
@@ -32,9 +32,9 @@ export default function Sidebar({ currentRoute, onRouteChange, currentUser, onUs
     },
     {
       id: 'talleres' as SidebarRoute,
-      label: 'Talleres mecÃ¡nicos',
+      label: 'Talleres mecánicos',
       icon: Wrench,
-      desc: 'Mapa de talleres mecÃ¡nicos'
+      desc: 'Mapa de talleres mecánicos'
     },
     {
       id: 'gasolineras' as SidebarRoute,
@@ -61,7 +61,7 @@ export default function Sidebar({ currentRoute, onRouteChange, currentUser, onUs
       id: 'empresas_concluidas' as SidebarRoute,
       label: 'Empresas Concluidas',
       icon: Trophy,
-      desc: 'Seguimiento post-prospecciÃ³n'
+      desc: 'Seguimiento post-prospección'
     });
     routes.push({
       id: 'admin_panel' as SidebarRoute,

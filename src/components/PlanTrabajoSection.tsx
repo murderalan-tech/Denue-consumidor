@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   ClipboardList, 
   Plus, 
@@ -205,7 +205,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
     if (!plan) return;
 
     if (cycleReady) {
-      const confirmed = window.confirm('\u00bfYa Terminaste de Prospectar esta Empresa?\n\nAl confirmar, se concluirÃ¡ el ciclo de prospecciÃ³n y la empresa se marcarÃ¡ como PROSPECTADO.');
+      const confirmed = window.confirm('\u00bfYa Terminaste de Prospectar esta Empresa?\n\nAl confirmar, se concluirá el ciclo de prospección y la empresa se marcará como PROSPECTADO.');
       if (!confirmed) return;
     }
 
@@ -254,15 +254,15 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
     const headers = [
       'Empresa',
       'Giro',
-      'DirecciÃ³n',
+      'Dirección',
       'Asesor',
       'Enlace CRM L360',
       'Marcas Competencia',
-      'Â¿Oportunidad Creada?',
+      '¿Oportunidad Creada?',
       'Enlace Oportunidad L360',
       'Motivo No Oportunidad',
       'Fecha Inicio (Agregado)',
-      'DÃ­as en Plan',
+      'Días en Plan',
       'Veces Agregada al Plan',
       'Ciclo',
       'Fecha Fin (Concluido)'
@@ -292,7 +292,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
         `"${(asesor?.nombre || 'Sin asesor').replace(/"/g, '""')}"`,
         `"${(currentPlanState.linkCrm360 || '').replace(/"/g, '""')}"`,
         `"${marcasStr.replace(/"/g, '""')}"`,
-        currentPlanState.oportunidadCreada ? 'SÃ­' : 'No',
+        currentPlanState.oportunidadCreada ? 'Sí' : 'No',
         `"${(currentPlanState.linkOportunidad360 || '').replace(/"/g, '""')}"`,
         `"${(currentPlanState.motivoNoOportunidad || '').replace(/"/g, '""')}"`,
         `"${fechaInicioStr}"`,
@@ -335,7 +335,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
         `"${(asesor?.nombre || 'Sin asesor').replace(/"/g, '""')}"`,
         `"${linkCrm.replace(/"/g, '""')}"`,
         `"${marcasStr.replace(/"/g, '""')}"`,
-        oportunidadCreada === true ? 'SÃ­' : oportunidadCreada === false ? 'No' : '',
+        oportunidadCreada === true ? 'Sí' : oportunidadCreada === false ? 'No' : '',
         `"${linkOportunidad.replace(/"/g, '""')}"`,
         `"${motivoNoOportunidad.replace(/"/g, '""')}"`,
         `"${fechaInicioStr}"`,
@@ -441,7 +441,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
           {activePlans.length === 0 ? (
             <div className="py-20 text-center text-xs text-[#7C7B77] bg-white border border-[#EAEAEA] rounded-xl">
               <CheckCircle2 className="w-10 h-10 text-neutral-200 mx-auto mb-2.5" />
-              <h4 className="font-bold text-sm text-[#37352F] mb-1">Plan de trabajo vacÃ­o</h4>
+              <h4 className="font-bold text-sm text-[#37352F] mb-1">Plan de trabajo vacío</h4>
               <p className="max-w-xs mx-auto text-[11px]">
                 Selecciona empresas validadas del panel izquierdo para agregarlas y registrar su plan de trabajo.
               </p>
@@ -499,10 +499,10 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                     <h4 className="font-display font-bold text-sm text-[#37352F] mt-1.5">{emp.nombre}</h4>
                     <p className="text-[10px] text-[#7C7B77]">{emp.direccion}</p>
                     
-                    {/* Fecha de inicio, dÃ­as transcurridos y veces agregada al plan */}
+                    {/* Fecha de inicio, días transcurridos y veces agregada al plan */}
                     {editPlan.fechaInicio && (
                       <div className="flex flex-wrap items-center gap-2.5 text-[10px] text-neutral-500 font-medium pt-1">
-                        <span>ðŸ“… Agregado al plan: <strong className="text-neutral-700">{new Date(editPlan.fechaInicio).toLocaleDateString('es-MX')}</strong></span>
+                        <span>📅 Agregado al plan: <strong className="text-neutral-700">{new Date(editPlan.fechaInicio).toLocaleDateString('es-MX')}</strong></span>
                         
                         {(() => {
                           const days = getDaysInPlan(editPlan.fechaInicio);
@@ -513,13 +513,13 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                                 ? 'bg-rose-50 text-rose-700 border-rose-200 animate-pulse'
                                 : 'bg-blue-50 text-blue-700 border-blue-100'
                             }`}>
-                              â³ {days} {days === 1 ? 'dÃ­a' : 'dÃ­as'} en plan
+                              ⏳ {days} {days === 1 ? 'día' : 'días'} en plan
                             </span>
                           );
                         })()}
 
                         <span className="inline-flex items-center px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-200 rounded-full font-bold">
-                          ðŸ”„ {emp.vecesAgregadoAlPlan || 1} {(!emp.vecesAgregadoAlPlan || emp.vecesAgregadoAlPlan === 1) ? 'vez agregada' : 'veces agregada'}
+                          🔄 {emp.vecesAgregadoAlPlan || 1} {(!emp.vecesAgregadoAlPlan || emp.vecesAgregadoAlPlan === 1) ? 'vez agregada' : 'veces agregada'}
                         </span>
                       </div>
                     )}
@@ -600,7 +600,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                       
                       <div className="space-y-2">
                         <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77] block">
-                          Â¿Se creÃ³ oportunidad comercial?
+                          ¿Se creó oportunidad comercial?
                         </span>
                         
                         <div className="grid grid-cols-2 gap-2">
@@ -613,7 +613,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                                 : 'bg-white border-[#EAEAEA] text-[#7C7B77] hover:bg-[#F1F1EF]'
                             }`}
                           >
-                            SÃ­, se creÃ³
+                            Sí, se creó
                           </button>
                           <button
                             type="button"
@@ -624,7 +624,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                                 : 'bg-white border-[#EAEAEA] text-[#7C7B77] hover:bg-[#F1F1EF]'
                             }`}
                           >
-                            No se creÃ³
+                            No se creó
                           </button>
                         </div>
                       </div>
@@ -659,7 +659,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                         // Conditional Motivo no oportunidad Select Dropdown
                         <div className="space-y-1 animate-in fade-in slide-in-from-top-1 duration-150">
                           <label className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77] block">
-                            Motivo por el cual no se creÃ³
+                            Motivo por el cual no se creó
                           </label>
                           <select
                             value={editPlan.motivoNoOportunidad || ''}
@@ -673,7 +673,7 @@ export default function PlanTrabajoSection({ currentUser, onDataChange }: PlanTr
                           </select>
                           {editPlan.motivoNoOportunidad === 'No se encontro al encargado' && (
                             <p className="text-[9px] text-amber-600 font-medium pt-1">
-                              * Al guardar, la empresa regresarÃ¡ a la lista de prospectos validados identificando que ya fue visitada.
+                              * Al guardar, la empresa regresará a la lista de prospectos validados identificando que ya fue visitada.
                             </p>
                           )}
                         </div>

@@ -1,4 +1,4 @@
-﻿import { Empresa, Asesor, PlanTrabajo } from '../types';
+import { Empresa, Asesor, PlanTrabajo } from '../types';
 import { SEED_ASESORES, SEED_EMPRESAS, SEED_PLANTTRABAJO } from './initialSeed';
 
 const KEY_EMPRESAS = 'denue_pv_empresas';

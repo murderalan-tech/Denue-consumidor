@@ -1,4 +1,4 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import { 
   FileSpreadsheet, 
   Upload, 
@@ -105,7 +105,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     setAdminNombre('');
     setAdminCorreo('');
     setAdminRol('administrador');
-    setAdminSuccess(`Â¡${newAsesor.nombre} registrado exitosamente como ${newAsesor.rol === 'administrador' ? 'Administrador' : 'Asesor'}!`);
+    setAdminSuccess(`¡${newAsesor.nombre} registrado exitosamente como ${newAsesor.rol === 'administrador' ? 'Administrador' : 'Asesor'}!`);
     
     onDataChange();
   };
@@ -113,7 +113,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   // --- CHANGE USER ROLE ACTION ---
   const handleChangeUserRole = (targetUser: Asesor, newRol: RolAsesor) => {
     if (targetUser.id === currentUser.id) {
-      alert("No puedes cambiar tu propio rol mientras estÃ¡s en sesiÃ³n.");
+      alert("No puedes cambiar tu propio rol mientras estás en sesión.");
       return;
     }
     const updatedUser: Asesor = {
@@ -128,11 +128,11 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   // --- DELETE USER ACTION ---
   const handleDeleteUser = (userToDelete: Asesor) => {
     if (userToDelete.id === currentUser.id) {
-      alert("No puedes revocar tu propio acceso mientras estÃ¡s en sesiÃ³n.");
+      alert("No puedes revocar tu propio acceso mientras estás en sesión.");
       return;
     }
 
-    if (window.confirm(`Â¿EstÃ¡s seguro de revocar el acceso y eliminar a ${userToDelete.nombre} (${userToDelete.correoGoogle}) del directorio?`)) {
+    if (window.confirm(`¿Estás seguro de revocar el acceso y eliminar a ${userToDelete.nombre} (${userToDelete.correoGoogle}) del directorio?`)) {
       deleteAsesor(userToDelete.id);
       setAdminSuccess(`Acceso revocado para ${userToDelete.nombre}.`);
       onDataChange();
@@ -143,7 +143,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!nombre.trim() || !direccion.trim() || !latitud.trim() || !longitud.trim()) {
-      alert("Por favor completa los campos requeridos (*): Nombre, DirecciÃ³n, Latitud y Longitud.");
+      alert("Por favor completa los campos requeridos (*): Nombre, Dirección, Latitud y Longitud.");
       return;
     }
 
@@ -151,7 +151,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     const lngNum = parseFloat(longitud);
 
     if (isNaN(latNum) || isNaN(lngNum)) {
-      alert("Por favor ingresa coordenadas vÃ¡lidas en Latitud y Longitud (nÃºmeros).");
+      alert("Por favor ingresa coordenadas válidas en Latitud y Longitud (números).");
       return;
     }
 
@@ -221,8 +221,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     ];
 
     const sampleRows = [
-      ['Refaccionaria La CÃºpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe', 'Chihuahua', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com'],
-      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203', 'JuÃ¡rez', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com'],
+      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe', 'Chihuahua', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com'],
+      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203', 'Juárez', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com'],
       ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500', 'Chihuahua', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex', 'juan.lopez@alchisa.com']
     ];
 
@@ -260,7 +260,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     reader.onload = (event) => {
       const text = event.target?.result as string;
       if (!text) {
-        setBulkErrorMsg("El archivo estÃ¡ vacÃ­o o es ilegible.");
+        setBulkErrorMsg("El archivo está vacío o es ilegible.");
         return;
       }
 
@@ -321,16 +321,16 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
         if (!nombreCol.trim()) {
           isValid = false;
-          errorMsg = 'Nombre vacÃ­o';
+          errorMsg = 'Nombre vacío';
         } else if (giroCol !== 'refaccionaria' && giroCol !== 'taller_mecanico' && giroCol !== 'gasolinera') {
           isValid = false;
-          errorMsg = `Giro invÃ¡lido (${giroCol})`;
+          errorMsg = `Giro inválido (${giroCol})`;
         } else if (isNaN(latVal) || isNaN(lngVal)) {
           isValid = false;
-          errorMsg = 'Coordenadas GPS invÃ¡lidas';
+          errorMsg = 'Coordenadas GPS inválidas';
         } else if (!dirCol.trim()) {
           isValid = false;
-          errorMsg = 'DirecciÃ³n vacÃ­a';
+          errorMsg = 'Dirección vacía';
         }
 
         parsed.push({
@@ -407,12 +407,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
     setTimeout(() => {
       setIsUploading(false);
-      setBulkSuccessMsg(`Se importaron con Ã©xito ${total} empresas a la base de datos local y Firebase Cloud.`);
+      setBulkSuccessMsg(`Se importaron con éxito ${total} empresas a la base de datos local y Firebase Cloud.`);
       setParsedRows([]);
       setCsvFileName('');
       onDataChange();
 
-      alert(`ðŸŽ‰ Â¡CARGA MASIVA COMPLETADA CON Ã‰XITO!\n\nSe procesaron e importaron correctamente ${total} empresas en Firebase Cloud y DENUE CONSUMIDOR.\n\nTodas las ubicaciones ya estÃ¡n sincronizadas entre navegadores.`);
+      alert(`🎉 ¡CARGA MASIVA COMPLETADA CON ÉXITO!\n\nSe procesaron e importaron correctamente ${total} empresas en Firebase Cloud y DENUE CONSUMIDOR.\n\nTodas las ubicaciones ya están sincronizadas entre navegadores.`);
     }, 400);
   };
 
@@ -421,10 +421,10 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
   // --- DELETE ALL EMPRESAS ACTION ---
   const handleDeleteAllEmpresas = () => {
-    const confirmMsg = "âš ï¸ Â¿EstÃ¡s seguro de que deseas ELIMINAR TODAS las empresas de la base de datos?\n\nEsta acciÃ³n borrarÃ¡ todas las refaccionarias, talleres, gasolineras y sus planes de trabajo asociados. Esta acciÃ³n no se puede deshacer.";
+    const confirmMsg = "⚠️ ¿Estás seguro de que deseas ELIMINAR TODAS las empresas de la base de datos?\n\nEsta acción borrará todas las refaccionarias, talleres, gasolineras y sus planes de trabajo asociados. Esta acción no se puede deshacer.";
     if (window.confirm(confirmMsg)) {
       deleteAllEmpresas();
-      setBulkSuccessMsg("Se eliminaron todas las empresas del catÃ¡logo.");
+      setBulkSuccessMsg("Se eliminaron todas las empresas del catálogo.");
       setParsedRows([]);
       setCsvFileName('');
       onDataChange();
@@ -467,7 +467,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                 : 'text-[#7C7B77] hover:text-[#37352F]'
             }`}
           >
-            ImportaciÃ³n Masiva CSV
+            Importación Masiva CSV
           </button>
           <button
             onClick={() => setActiveSubTab('admins')}
@@ -517,14 +517,14 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                     required
                     value={nombre}
                     onChange={(e) => setNombre(e.target.value)}
-                    placeholder="Ej. Refaccionaria La UniÃ³n"
+                    placeholder="Ej. Refaccionaria La Unión"
                     className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                   />
                 </div>
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
-                    RazÃ³n Social
+                    Razón Social
                   </label>
                   <input
                     type="text"
@@ -547,7 +547,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                     className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                   >
                     <option value="refaccionaria">Refaccionaria</option>
-                    <option value="taller_mecanico">Taller MecÃ¡nico</option>
+                    <option value="taller_mecanico">Taller Mecánico</option>
                     <option value="gasolinera">Gasolinera</option>
                   </select>
                 </div>
@@ -587,14 +587,14 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
-                  DirecciÃ³n del Establecimiento *
+                  Dirección del Establecimiento *
                 </label>
                 <input
                   type="text"
                   required
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
-                  placeholder="Calle, NÃºmero, Colonia"
+                  placeholder="Calle, Número, Colonia"
                   className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                 />
               </div>
@@ -607,7 +607,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                   type="text"
                   value={ciudad}
                   onChange={(e) => setCiudad(e.target.value)}
-                  placeholder="Ej. Chihuahua, JuÃ¡rez, CuauhtÃ©moc..."
+                  placeholder="Ej. Chihuahua, Juárez, Cuauhtémoc..."
                   className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                 />
               </div>
@@ -647,13 +647,13 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
-                    TelÃ©fono
+                    Teléfono
                   </label>
                   <input
                     type="text"
                     value={telefono}
                     onChange={(e) => setTelefono(e.target.value)}
-                    placeholder="NÃºmero de 10 dÃ­gitos"
+                    placeholder="Número de 10 dígitos"
                     className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                   />
                 </div>
@@ -708,10 +708,10 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
               <div className="space-y-1.5">
                 <h4 className="font-display font-bold text-sm text-[#37352F] flex items-center gap-1.5">
                   <Upload className="w-4 h-4 text-blue-700" />
-                  Carga Masiva de Empresas vÃ­a CSV
+                  Carga Masiva de Empresas vía CSV
                 </h4>
                 <p className="text-[11px] text-[#7C7B77] max-w-xl leading-normal">
-                  Descarga nuestra plantilla estÃ¡ndar, llÃ©nala con los datos de las refaccionarias, talleres y gasolineras, y sÃºbela aquÃ­.
+                  Descarga nuestra plantilla estándar, llénala con los datos de las refaccionarias, talleres y gasolineras, y súbela aquí.
                 </p>
               </div>
 
@@ -723,7 +723,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                   title="Eliminar todas las empresas del sistema"
                 >
                   <Trash2 className="w-4 h-4 text-rose-600" />
-                  Vaciar CatÃ¡logo
+                  Vaciar Catálogo
                 </button>
 
                 <button
@@ -761,7 +761,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                 <Upload className="w-6 h-6" />
               </div>
               <span className="text-xs font-bold text-[#37352F] block">
-                {csvFileName ? `Archivo cargado: ${csvFileName}` : 'Arrastra tu archivo CSV aquÃ­ o haz clic para buscar'}
+                {csvFileName ? `Archivo cargado: ${csvFileName}` : 'Arrastra tu archivo CSV aquí o haz clic para buscar'}
               </span>
               <span className="text-[10px] text-[#7C7B77] block mt-1">
                 Solo archivos .csv delimitados por comas en formato UTF-8
@@ -792,10 +792,10 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
               <div className="bg-white border border-[#EAEAEA] rounded-xl overflow-hidden shadow-xs space-y-4 p-5 animate-in fade-in duration-250">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#EAEAEA]">
                   <div className="flex items-center gap-4 text-xs font-bold text-[#37352F]">
-                    <span>Filas leÃ­das: {parsedRows.length}</span>
+                    <span>Filas leídas: {parsedRows.length}</span>
                     <span className="text-emerald-600 flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
-                      VÃ¡lidos: {totalValid}
+                      Válidos: {totalValid}
                     </span>
                     {totalInvalid > 0 && (
                       <span className="text-rose-500 flex items-center gap-1">
@@ -825,7 +825,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                         <th className="p-2.5">Giro</th>
                         <th className="p-2.5">Asesor Asignado</th>
                         <th className="p-2.5">GPS (Lat/Lng)</th>
-                        <th className="p-2.5">DirecciÃ³n</th>
+                        <th className="p-2.5">Dirección</th>
                         <th className="p-2.5">Detalles</th>
                       </tr>
                     </thead>
@@ -842,7 +842,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                           </td>
                           <td className="p-2.5 text-center">
                             {row.isValid ? (
-                              <span className="inline-flex items-center text-emerald-600 font-bold" title="LÃ­nea correcta">
+                              <span className="inline-flex items-center text-emerald-600 font-bold" title="Línea correcta">
                                 <CheckCircle2 className="w-4.5 h-4.5" />
                               </span>
                             ) : (
@@ -852,10 +852,10 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                             )}
                           </td>
                           <td className={`p-2.5 font-semibold ${row.isValid ? 'text-[#37352F]' : 'text-rose-700'}`}>
-                            {row.nombre || <span className="text-rose-400 italic">VacÃ­o</span>}
+                            {row.nombre || <span className="text-rose-400 italic">Vacío</span>}
                           </td>
                           <td className="p-2.5 text-[#7C7B77] capitalize">
-                            {row.giro ? row.giro.replace('_', ' ') : <span className="text-rose-400 italic">VacÃ­o</span>}
+                            {row.giro ? row.giro.replace('_', ' ') : <span className="text-rose-400 italic">Vacío</span>}
                           </td>
                           <td className="p-2.5 text-[#7C7B77]">
                             {row.correoAsesor ? (
@@ -878,7 +878,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                               : <span className="text-rose-400 font-sans italic">Error GPS</span>}
                           </td>
                           <td className="p-2.5 text-[#7C7B77] max-w-xs truncate" title={row.direccion}>
-                            {row.direccion || <span className="text-rose-400 italic">VacÃ­o</span>}
+                            {row.direccion || <span className="text-rose-400 italic">Vacío</span>}
                           </td>
                           <td className="p-2.5 text-[#7C7B77] font-semibold text-[10px]">
                             {row.isValid ? (
@@ -901,7 +901,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                   <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-[10px] leading-normal flex items-start gap-2">
                     <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
                     <div>
-                      <strong>Advertencia sobre datos errÃ³neos:</strong> El archivo contiene {totalInvalid} filas invÃ¡lidas. Puedes continuar con la importaciÃ³n; el sistema omitirÃ¡ automÃ¡ticamente las lÃ­neas con error.
+                      <strong>Advertencia sobre datos erróneos:</strong> El archivo contiene {totalInvalid} filas inválidas. Puedes continuar con la importación; el sistema omitirá automáticamente las líneas con error.
                     </div>
                   </div>
                 )}
@@ -951,7 +951,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                       required
                       value={adminNombre}
                       onChange={(e) => setAdminNombre(e.target.value)}
-                      placeholder="Ej. MarÃ­a Elena Torres"
+                      placeholder="Ej. María Elena Torres"
                       className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                     />
                   </div>
@@ -979,8 +979,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                       onChange={(e) => setAdminRol(e.target.value as RolAsesor)}
                       className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
                     >
-                      <option value="administrador">ðŸ›¡ï¸ Administrador (Acceso Total)</option>
-                      <option value="asesor">ðŸ‘¥ Asesor Comercial (Prospectador)</option>
+                      <option value="administrador">🛡️ Administrador (Acceso Total)</option>
+                      <option value="asesor">👥 Asesor Comercial (Prospectador)</option>
                     </select>
                   </div>
                 </div>
@@ -1040,7 +1040,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                           {u.id === currentUser.id ? (
                             <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full uppercase">
                               <Shield className="w-3 h-3" />
-                              Administrador (TÃº)
+                              Administrador (Tú)
                             </span>
                           ) : (
                             <select
@@ -1048,8 +1048,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                               onChange={(e) => handleChangeUserRole(u, e.target.value as RolAsesor)}
                               className="px-2 py-1 text-[10px] font-bold rounded-lg border border-[#EAEAEA] bg-white text-[#37352F] cursor-pointer focus:outline-none focus:border-blue-600 shadow-2xs"
                             >
-                              <option value="asesor">ðŸ‘¤ Asesor de Ventas</option>
-                              <option value="administrador">ðŸ›¡ï¸ Administrador</option>
+                              <option value="asesor">👤 Asesor de Ventas</option>
+                              <option value="administrador">🛡️ Administrador</option>
                             </select>
                           )}
                         </td>
@@ -1064,7 +1064,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                               <Trash2 className="w-4 h-4" />
                             </button>
                           ) : (
-                            <span className="text-[9px] text-[#7C7B77] italic font-semibold">SesiÃ³n Actual</span>
+                            <span className="text-[9px] text-[#7C7B77] italic font-semibold">Sesión Actual</span>
                           )}
                         </td>
                       </tr>

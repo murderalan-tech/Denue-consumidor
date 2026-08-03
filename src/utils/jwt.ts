@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Decodes a Google OAuth JWT credential id_token on the client-side
  * without requiring external npm packages.
  */

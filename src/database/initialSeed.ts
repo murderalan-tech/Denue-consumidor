@@ -1,4 +1,4 @@
-﻿import { Asesor, Empresa, PlanTrabajo } from '../types';
+import { Asesor, Empresa, PlanTrabajo } from '../types';
 
 export const SEED_ASESORES: Asesor[] = [
   {
@@ -21,27 +21,27 @@ export const SEED_ASESORES: Asesor[] = [
   },
   {
     id: "juan_id",
-    nombre: "Juan LÃ³pez",
+    nombre: "Juan López",
     correoGoogle: "juan.lopez@alchisa.com",
     rol: "asesor"
   },
   {
     id: "maria_id",
-    nombre: "MarÃ­a GÃ³mez",
+    nombre: "María Gómez",
     correoGoogle: "maria.gomez@alchisa.com",
     rol: "asesor"
   }
 ];
 
 export const SEED_EMPRESAS: Empresa[] = [
-  // === REFACCIONARIAS (Chihuahua, JuÃ¡rez, Delicias) ===
+  // === REFACCIONARIAS (Chihuahua, Juárez, Delicias) ===
   {
     id: "ref_001",
     nombre: "Refaccionaria Chihuahua Centro",
     giro: "refaccionaria",
     latitud: 28.6368,
     longitud: -106.0712,
-    direccion: "Av. JuÃ¡rez 1102, Col. Centro, Chihuahua, Chih.",
+    direccion: "Av. Juárez 1102, Col. Centro, Chihuahua, Chih.",
     telefono: "6144131515",
     contacto: "Ing. Carlos Mendoza",
     estatus: "cliente",
@@ -67,7 +67,7 @@ export const SEED_EMPRESAS: Empresa[] = [
     giro: "refaccionaria",
     latitud: 31.7215,
     longitud: -106.4485,
-    direccion: "Av. TecnolÃ³gico 8500, Col. Infonavit, Cd. JuÃ¡rez, Chih.",
+    direccion: "Av. Tecnológico 8500, Col. Infonavit, Cd. Juárez, Chih.",
     telefono: "6566172040",
     contacto: "Sr. Fernando Silva",
     estatus: "sin_accion",
@@ -76,26 +76,26 @@ export const SEED_EMPRESAS: Empresa[] = [
   },
   {
     id: "ref_004",
-    nombre: "El Mundo de las Refacciones JuÃ¡rez",
+    nombre: "El Mundo de las Refacciones Juárez",
     giro: "refaccionaria",
     latitud: 31.6912,
     longitud: -106.4254,
-    direccion: "Av. De la Raza 3110, Col. ChaveÃ±a, Cd. JuÃ¡rez, Chih.",
+    direccion: "Av. De la Raza 3110, Col. Chaveña, Cd. Juárez, Chih.",
     telefono: "6566120909",
-    contacto: "Eduardo GÃ³mez",
+    contacto: "Eduardo Gómez",
     estatus: "prospecto_real",
     asesorId: "maria_id",
     fechaActualizacion: new Date().toISOString()
   },
   {
     id: "ref_005",
-    nombre: "Refaccionaria ElÃ©ctrica Delicias",
+    nombre: "Refaccionaria Eléctrica Delicias",
     giro: "refaccionaria",
     latitud: 28.1925,
     longitud: -105.4718,
     direccion: "Av. Agricultura Oriente 402, Col. Centro, Delicias, Chih.",
     telefono: "6394723050",
-    contacto: "MartÃ­n HolguÃ­n",
+    contacto: "Martín Holguín",
     estatus: "cliente_de_cliente",
     asesorId: "maria_id",
     fechaActualizacion: new Date().toISOString()
@@ -115,11 +115,11 @@ export const SEED_EMPRESAS: Empresa[] = [
   },
   {
     id: "ref_007",
-    nombre: "Refacciones Diesel de CuauhtÃ©moc",
+    nombre: "Refacciones Diesel de Cuauhtémoc",
     giro: "refaccionaria",
     latitud: 28.4085,
     longitud: -106.8640,
-    direccion: "Calzada 16 de Septiembre 840, Col. Centro, CuauhtÃ©moc, Chih.",
+    direccion: "Calzada 16 de Septiembre 840, Col. Centro, Cuauhtémoc, Chih.",
     telefono: "6255823412",
     contacto: "Peter Friesen",
     estatus: "no_ligado_estrategia",
@@ -132,7 +132,7 @@ export const SEED_EMPRESAS: Empresa[] = [
     giro: "refaccionaria",
     latitud: 28.6180,
     longitud: -106.0490,
-    direccion: "Calle 11 y Av. NiÃ±os HÃ©roes, Col. Centro, Chihuahua, Chih.",
+    direccion: "Calle 11 y Av. Niños Héroes, Col. Centro, Chihuahua, Chih.",
     telefono: "",
     contacto: "",
     estatus: "no_existe",
@@ -143,13 +143,13 @@ export const SEED_EMPRESAS: Empresa[] = [
   // === TALLERES MECANICOS ===
   {
     id: "tal_001",
-    nombre: "Taller MecÃ¡nico Silva e Hijos",
+    nombre: "Taller Mecánico Silva e Hijos",
     giro: "taller_mecanico",
     latitud: 28.6295,
     longitud: -106.0820,
     direccion: "Calle 20a 3402, Col. Santa Rosa, Chihuahua, Chih.",
     telefono: "6144102939",
-    contacto: "Don RamÃ³n Silva",
+    contacto: "Don Ramón Silva",
     estatus: "cliente",
     asesorId: "maria_id",
     fechaActualizacion: new Date().toISOString()
@@ -169,11 +169,11 @@ export const SEED_EMPRESAS: Empresa[] = [
   },
   {
     id: "tal_003",
-    nombre: "Taller Frenos y Alineaciones JuÃ¡rez",
+    nombre: "Taller Frenos y Alineaciones Juárez",
     giro: "taller_mecanico",
     latitud: 31.7056,
     longitud: -106.4012,
-    direccion: "Av. LÃ³pez Mateos 1205, Col. El Colegio, Cd. JuÃ¡rez, Chih.",
+    direccion: "Av. López Mateos 1205, Col. El Colegio, Cd. Juárez, Chih.",
     telefono: "6566239080",
     contacto: "Manuel Oronoz",
     estatus: "sin_accion",
@@ -182,11 +182,11 @@ export const SEED_EMPRESAS: Empresa[] = [
   },
   {
     id: "tal_004",
-    nombre: "Taller HidrÃ¡ulico Menonita",
+    nombre: "Taller Hidráulico Menonita",
     giro: "taller_mecanico",
     latitud: 28.4312,
     longitud: -106.8890,
-    direccion: "Corredor Comercial Km 10, CuauhtÃ©moc, Chih.",
+    direccion: "Corredor Comercial Km 10, Cuauhtémoc, Chih.",
     telefono: "6255861001",
     contacto: "Johan Giesbrecht",
     estatus: "cliente_de_cliente",
@@ -199,16 +199,16 @@ export const SEED_EMPRESAS: Empresa[] = [
     giro: "taller_mecanico",
     latitud: 28.1880,
     longitud: -105.4650,
-    direccion: "Av. RÃ­o Conchos 110, Col. Centro, Delicias, Chih.",
+    direccion: "Av. Río Conchos 110, Col. Centro, Delicias, Chih.",
     telefono: "6394741212",
-    contacto: "RubÃ©n AlvÃ­drez",
+    contacto: "Rubén Alvídrez",
     estatus: "prospecto_real",
     asesorId: "maria_id",
     fechaActualizacion: new Date().toISOString()
   },
   {
     id: "tal_006",
-    nombre: "Taller Electro-MecÃ¡nico El Chispas",
+    nombre: "Taller Electro-Mecánico El Chispas",
     giro: "taller_mecanico",
     latitud: 26.9425,
     longitud: -105.6590,
@@ -221,11 +221,11 @@ export const SEED_EMPRESAS: Empresa[] = [
   },
   {
     id: "tal_007",
-    nombre: "Taller MecÃ¡nico Especializado BMW/Audi",
+    nombre: "Taller Mecánico Especializado BMW/Audi",
     giro: "taller_mecanico",
     latitud: 28.6412,
     longitud: -106.1345,
-    direccion: "Av. PerifÃ©rico de la Juventud 5700, Col. Las Carretas, Chihuahua, Chih.",
+    direccion: "Av. Periférico de la Juventud 5700, Col. Las Carretas, Chihuahua, Chih.",
     telefono: "6144301567",
     contacto: "Ing. Jorge Valenzuela",
     estatus: "no_ligado_estrategia",
@@ -256,7 +256,7 @@ export const SEED_EMPRESAS: Empresa[] = [
     longitud: -106.1034,
     direccion: "Av. Adolfo Ortiz Mena 3201, Col. Quintas del Sol, Chihuahua, Chih.",
     telefono: "6144158910",
-    contacto: "Lic. Javier SolÃ­s",
+    contacto: "Lic. Javier Solís",
     estatus: "prospecto_real",
     asesorId: "juan_id",
     grupoGasolinero: "Grupo Oxxo Gas",
@@ -268,7 +268,7 @@ export const SEED_EMPRESAS: Empresa[] = [
     giro: "gasolinera",
     latitud: 28.6745,
     longitud: -106.0987,
-    direccion: "Av. TecnolÃ³gico 4905, Col. Granjas, Chihuahua, Chih.",
+    direccion: "Av. Tecnológico 4905, Col. Granjas, Chihuahua, Chih.",
     telefono: "6144192030",
     contacto: "Ing. Roberto Loya",
     estatus: "prospecto_real",
@@ -282,7 +282,7 @@ export const SEED_EMPRESAS: Empresa[] = [
     giro: "gasolinera",
     latitud: 31.7345,
     longitud: -106.4124,
-    direccion: "Av. Paseo Triunfo de la RepÃºblica 4500, Cd. JuÃ¡rez, Chih.",
+    direccion: "Av. Paseo Triunfo de la República 4500, Cd. Juárez, Chih.",
     telefono: "6566184530",
     contacto: "Lic. Hugo Valles",
     estatus: "prospecto_real",
@@ -296,7 +296,7 @@ export const SEED_EMPRESAS: Empresa[] = [
     giro: "gasolinera",
     latitud: 31.7398,
     longitud: -106.4845,
-    direccion: "Av. 16 de Septiembre 302, Col. Centro, Cd. JuÃ¡rez, Chih.",
+    direccion: "Av. 16 de Septiembre 302, Col. Centro, Cd. Juárez, Chih.",
     telefono: "6566113940",
     contacto: "Sr. Albert Peters",
     estatus: "no_ligado_estrategia",
@@ -325,7 +325,7 @@ export const SEED_PLANTTRABAJO: PlanTrabajo[] = [
     linkCrm360: "https://crm360.alchisa.com/lead/gas_002",
     marcaCompetencia: "Roshfrans",
     oportunidadCreada: false,
-    motivoNoOportunidad: "Tienen contrato de exclusividad vigente por 2 aÃ±os.",
+    motivoNoOportunidad: "Tienen contrato de exclusividad vigente por 2 años.",
     cicloCompletado: true
   },
   {

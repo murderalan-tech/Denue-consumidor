@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Fuel, 
   Search, 
@@ -179,10 +179,10 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
           <Fuel className="w-5 h-5 text-blue-700" />
           <div>
             <h3 className="font-display font-bold text-sm text-[#37352F] uppercase tracking-wide leading-none">
-              ProspecciÃ³n por Grupos Gasolineros
+              Prospección por Grupos Gasolineros
             </h3>
             <span className="text-[10px] text-[#7C7B77] mt-1 block">
-              GestiÃ³n comercial centralizada a nivel grupo corporativo
+              Gestión comercial centralizada a nivel grupo corporativo
             </span>
           </div>
         </div>
