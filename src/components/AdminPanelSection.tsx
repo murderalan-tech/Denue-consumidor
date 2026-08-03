@@ -136,15 +136,31 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   // --- MANUAL LOAD ACTION ---
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre.trim() || !direccion.trim() || !latitud.trim() || !longitud.trim()) return;
+    if (!nombre.trim() || !direccion.trim() || !latitud.trim() || !longitud.trim()) {
+      alert("Por favor completa los campos requeridos (*): Nombre, Dirección, Latitud y Longitud.");
+      return;
+    }
+
+    const latNum = parseFloat(latitud);
+    const lngNum = parseFloat(longitud);
+
+    if (isNaN(latNum) || isNaN(lngNum)) {
+      alert("Por favor ingresa coordenadas válidas en Latitud y Longitud (números).");
+      return;
+    }
+
+    if (giro === 'gasolinera' && !grupoGasolinero.trim()) {
+      alert("Por favor especifica el Grupo Gasolinero.");
+      return;
+    }
 
     const newEmpresa: Empresa = {
       id: `man_${Date.now()}`,
       nombre: nombre.trim(),
       razonSocial: razonSocial.trim() || 'N/A',
       giro,
-      latitud: parseFloat(latitud),
-      longitud: parseFloat(longitud),
+      latitud: latNum,
+      longitud: lngNum,
       direccion: direccion.trim(),
       ciudad: ciudad.trim() || undefined,
       telefono: telefono.trim(),
@@ -173,7 +189,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
     setTimeout(() => {
       setManualSuccess(false);
-    }, 3000);
+    }, 4000);
   };
 
   // --- CSV TEMPLATE EXPORT ---
