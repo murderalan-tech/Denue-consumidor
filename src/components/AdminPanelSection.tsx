@@ -168,14 +168,20 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       latitud: latNum,
       longitud: lngNum,
       direccion: direccion.trim(),
-      ciudad: ciudad.trim() || undefined,
       telefono: telefono.trim(),
       contacto: contacto.trim(),
       estatus: 'sin_accion',
       asesorId,
-      grupoGasolinero: giro === 'gasolinera' ? (grupoGasolinero.trim() || 'Independiente') : undefined,
       fechaActualizacion: new Date().toISOString()
     };
+
+    if (ciudad.trim()) {
+      newEmpresa.ciudad = ciudad.trim();
+    }
+    
+    if (giro === 'gasolinera') {
+      newEmpresa.grupoGasolinero = grupoGasolinero.trim() || 'Independiente';
+    }
 
     addEmpresa(newEmpresa);
     setManualSuccess(true);
@@ -357,22 +363,32 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
     const validRows = parsedRows.filter(r => r.isValid);
     if (validRows.length === 0) return;
 
-    const newEmpresas: Empresa[] = validRows.map((r, idx) => ({
-      id: `csv_${Date.now()}_${idx}`,
-      nombre: r.nombre.trim(),
-      razonSocial: r.razonSocial.trim(),
-      giro: r.giro as Giro,
-      latitud: r.latitud!,
-      longitud: r.longitud!,
-      direccion: r.direccion.trim(),
-      ciudad: r.ciudad.trim() || undefined,
-      telefono: r.telefono.trim(),
-      contacto: r.contacto.trim(),
-      estatus: 'sin_accion',
-      asesorId: r.asesorId,
-      grupoGasolinero: r.giro === 'gasolinera' ? (r.grupoGasolinero.trim() || 'Independiente') : undefined,
-      fechaActualizacion: new Date().toISOString()
-    }));
+    const newEmpresas: Empresa[] = validRows.map((r, idx) => {
+      const empresa: Empresa = {
+        id: `csv_${Date.now()}_${idx}`,
+        nombre: r.nombre.trim(),
+        razonSocial: r.razonSocial.trim(),
+        giro: r.giro as Giro,
+        latitud: r.latitud!,
+        longitud: r.longitud!,
+        direccion: r.direccion.trim(),
+        telefono: r.telefono.trim(),
+        contacto: r.contacto.trim(),
+        estatus: 'sin_accion',
+        asesorId: r.asesorId,
+        fechaActualizacion: new Date().toISOString()
+      };
+      
+      if (r.ciudad.trim()) {
+        empresa.ciudad = r.ciudad.trim();
+      }
+      
+      if (r.giro === 'gasolinera') {
+        empresa.grupoGasolinero = r.grupoGasolinero.trim() || 'Independiente';
+      }
+      
+      return empresa;
+    });
 
     setIsUploading(true);
     setUploadProgress(0);
