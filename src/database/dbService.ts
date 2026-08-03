@@ -179,6 +179,24 @@ export function addEmpresa(empresa: Empresa): Empresa {
   return updated;
 }
 
+export function deleteAllEmpresas(): void {
+  localDb.deleteAllEmpresas();
+
+  if (isCloudActive() && db) {
+    getDocs(collection(db, 'empresas')).then(snap => {
+      const batch = writeBatch(db!);
+      snap.forEach(d => batch.delete(d.ref));
+      batch.commit();
+    }).catch(err => console.error("Cloud deleteAllEmpresas failed:", err));
+
+    getDocs(collection(db, 'plan_trabajo')).then(snap => {
+      const batch = writeBatch(db!);
+      snap.forEach(d => batch.delete(d.ref));
+      batch.commit();
+    }).catch(err => console.error("Cloud deleteAllPlanTrabajo failed:", err));
+  }
+}
+
 export function addEmpresasBulk(newEmpresas: Empresa[]): Empresa[] {
   const updated = localDb.addEmpresasBulk(newEmpresas);
   

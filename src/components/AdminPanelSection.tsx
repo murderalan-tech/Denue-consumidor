@@ -12,7 +12,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { Empresa, Giro, Asesor, RolAsesor } from '../types';
-import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor } from '../database/dbService';
+import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor, deleteAllEmpresas } from '../database/dbService';
 
 interface AdminPanelSectionProps {
   currentUser: Asesor;
@@ -379,6 +379,18 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const totalValid = parsedRows.filter(r => r.isValid).length;
   const totalInvalid = parsedRows.filter(r => !r.isValid).length;
 
+  // --- DELETE ALL EMPRESAS ACTION ---
+  const handleDeleteAllEmpresas = () => {
+    const confirmMsg = "⚠️ ¿Estás seguro de que deseas ELIMINAR TODAS las empresas de la base de datos?\n\nEsta acción borrará todas las refaccionarias, talleres, gasolineras y sus planes de trabajo asociados. Esta acción no se puede deshacer.";
+    if (window.confirm(confirmMsg)) {
+      deleteAllEmpresas();
+      setBulkSuccessMsg("Se eliminaron todas las empresas del catálogo.");
+      setParsedRows([]);
+      setCsvFileName('');
+      onDataChange();
+    }
+  };
+
   return (
     <div className="flex-1 flex flex-col bg-white border border-[#EAEAEA] rounded-xl overflow-hidden shadow-sm h-full max-h-[calc(100vh-80px)] select-none">
       
@@ -663,13 +675,25 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                 </p>
               </div>
 
-              <button
-                onClick={handleDownloadTemplate}
-                className="py-2 px-3.5 bg-neutral-100 hover:bg-[#EFEFED] text-[#37352F] rounded-lg border border-neutral-200 text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer"
-              >
-                <Download className="w-4 h-4 text-blue-700" />
-                Descargar Plantilla
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={handleDeleteAllEmpresas}
+                  className="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg border border-rose-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                  title="Eliminar todas las empresas del sistema"
+                >
+                  <Trash2 className="w-4 h-4 text-rose-600" />
+                  Vaciar Catálogo
+                </button>
+
+                <button
+                  onClick={handleDownloadTemplate}
+                  className="py-2 px-3.5 bg-neutral-100 hover:bg-[#EFEFED] text-[#37352F] rounded-lg border border-neutral-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-blue-700" />
+                  Descargar Plantilla
+                </button>
+              </div>
             </div>
 
             {bulkSuccessMsg && (

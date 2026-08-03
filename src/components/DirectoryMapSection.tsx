@@ -93,8 +93,10 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
     if (filteredEmpresas.length > 0) {
       const bounds: any[] = [];
+      // Max 500 map pins for smooth browser performance
+      const mapEmpresas = filteredEmpresas.slice(0, 500);
 
-      filteredEmpresas.forEach(emp => {
+      mapEmpresas.forEach(emp => {
         if (!emp.latitud || !emp.longitud) return;
 
         // Determine color based on status

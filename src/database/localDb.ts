@@ -100,6 +100,11 @@ export function updateEmpresa(updatedEmpresa: Empresa): Empresa {
   return updatedEmpresa;
 }
 
+export function deleteAllEmpresas(): void {
+  localStorage.setItem(KEY_EMPRESAS, JSON.stringify([]));
+  localStorage.setItem(KEY_PLAN_TRABAJO, JSON.stringify([]));
+}
+
 export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
   const plans = getPlanTrabajo();
   const empresas = getEmpresas();
