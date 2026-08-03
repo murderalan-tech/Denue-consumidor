@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { Empresa, Asesor, EstatusPros, ESTATUS_LABELS } from '../types';
 import { getAsesores } from '../database/dbService';
@@ -32,7 +32,8 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const isAdmin = currentUser.rol === 'administrador';
 
   // 1. Filter Leads list strictly by Giro ('refaccionaria' | 'taller_mecanico'), Advisor Role and search inputs
-  const filteredEmpresas = empresas.filter(emp => {
+  const filteredEmpresas = useMemo(() => {
+    return empresas.filter(emp => {
     // Giro filter: ONLY show companies matching this section's giro!
     if (emp.giro !== giro) {
       return false;
@@ -65,11 +66,14 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
     const matchesCity = cityFilter === 'all' || (emp.ciudad && emp.ciudad.trim() === cityFilter);
 
     return matchesSearch && matchesStatus && matchesAsesor && matchesCity;
-  });
+    });
+  }, [empresas, giro, isAdmin, currentUser.id, searchTerm, statusFilter, asesorFilter, cityFilter]);
 
-  const uniqueCities = Array.from(
-    new Set(empresas.filter(e => e.giro === giro && e.ciudad && e.ciudad.trim() !== '').map(e => e.ciudad!.trim()))
-  ).sort();
+  const uniqueCities = useMemo(() => {
+    return Array.from(
+      new Set(empresas.filter(e => e.giro === giro && e.ciudad && e.ciudad.trim() !== '').map(e => e.ciudad!.trim()))
+    ).sort();
+  }, [empresas, giro]);
 
   // 2. Initialize Leaflet Map
   useEffect(() => {
