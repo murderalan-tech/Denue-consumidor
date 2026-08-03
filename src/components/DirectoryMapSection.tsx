@@ -14,12 +14,13 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [asesorFilter, setAsesorFilter] = useState<string>('all');
+  const [cityFilter, setCityFilter] = useState<string>('all');
   const [shouldFitBounds, setShouldFitBounds] = useState(true);
 
   // When filters change, we want to re-fit the bounds
   useEffect(() => {
     setShouldFitBounds(true);
-  }, [giro, searchTerm, statusFilter, asesorFilter]);
+  }, [giro, searchTerm, statusFilter, asesorFilter, cityFilter]);
 
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<any>(null);
@@ -59,8 +60,15 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
       }
     }
 
-    return matchesSearch && matchesStatus && matchesAsesor;
+    // City filter
+    const matchesCity = cityFilter === 'all' || (emp.ciudad && emp.ciudad.trim() === cityFilter);
+
+    return matchesSearch && matchesStatus && matchesAsesor && matchesCity;
   });
+
+  const uniqueCities = Array.from(
+    new Set(empresas.filter(e => e.giro === giro && e.ciudad && e.ciudad.trim() !== '').map(e => e.ciudad!.trim()))
+  ).sort();
 
   // 2. Initialize Leaflet Map
   useEffect(() => {
@@ -224,6 +232,21 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
                   .filter(([key]) => !(giro === 'refaccionaria' && key === 'cliente_de_cliente'))
                   .map(([key, details]) => (
                   <option key={key} value={key}>{details.label}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* City select */}
+            <div>
+              <span className="text-[9px] font-bold text-[#7C7B77] uppercase block mb-1">Filtrar Ciudad</span>
+              <select
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+                className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs focus:outline-none"
+              >
+                <option value="all">Todas las ciudades</option>
+                {uniqueCities.map(city => (
+                  <option key={city} value={city}>{city}</option>
                 ))}
               </select>
             </div>
