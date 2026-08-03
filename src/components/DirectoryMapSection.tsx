@@ -17,6 +17,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [shouldFitBounds, setShouldFitBounds] = useState(true);
   const [visibleEmpresas, setVisibleEmpresas] = useState<Empresa[]>([]);
+  const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
 
   // When filters change, we want to re-fit the bounds
   useEffect(() => {
@@ -225,13 +226,29 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   }, [filteredEmpresas]);
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row gap-5 h-[calc(100vh-80px)] overflow-hidden">
+    <div className="flex-1 flex flex-col md:flex-row gap-0 md:gap-5 h-[calc(100vh-80px)] overflow-hidden relative">
+
+      {/* Mobile Toggle (Visible only on mobile) */}
+      <div className="md:hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] bg-white rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.15)] border border-neutral-200 p-1 flex items-center gap-1 font-sans">
+        <button 
+          onClick={() => setMobileView('map')}
+          className={`px-5 py-2 rounded-full text-xs font-bold transition-colors shadow-sm cursor-pointer ${mobileView === 'map' ? 'bg-blue-600 text-white' : 'text-neutral-600 hover:bg-neutral-100 bg-transparent shadow-none'}`}
+        >
+          Ver Mapa
+        </button>
+        <button 
+          onClick={() => setMobileView('list')}
+          className={`px-5 py-2 rounded-full text-xs font-bold transition-colors shadow-sm cursor-pointer ${mobileView === 'list' ? 'bg-blue-600 text-white' : 'text-neutral-600 hover:bg-neutral-100 bg-transparent shadow-none'}`}
+        >
+          Ver Lista
+        </button>
+      </div>
       
       {/* Left panel: Filters and Cards List */}
-      <div className="w-full md:w-80 shrink-0 flex flex-col bg-white border border-[#EAEAEA] rounded-xl overflow-hidden shadow-sm h-full">
+      <div className={`w-full md:w-80 shrink-0 flex-col bg-white md:border border-[#EAEAEA] md:rounded-xl overflow-hidden md:shadow-sm h-full z-30 ${mobileView === 'list' ? 'flex absolute inset-0 md:relative' : 'hidden md:flex'}`}>
         
         {/* Filters Header */}
-        <div className="p-4 border-b border-[#EAEAEA] bg-[#FBFBFA] space-y-3">
+        <div className="p-4 border-b border-[#EAEAEA] bg-[#FBFBFA] space-y-3 pb-16 md:pb-4">
           
           {/* Search text */}
           <div className="relative">
@@ -342,12 +359,13 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
         </div>
       </div>
 
-      {/* Right panel: Leaflet Map */}
-      <div className="flex-1 relative bg-white border border-[#EAEAEA] rounded-xl overflow-hidden shadow-sm h-full">
+      {/* Right panel: Map */}
+      <div className={`flex-1 relative bg-neutral-100 md:bg-white md:border border-[#EAEAEA] md:rounded-xl overflow-hidden md:shadow-sm h-full z-10 flex absolute inset-0 md:relative`}>
+        
         <div ref={mapContainerRef} className="w-full h-full z-10" />
 
         {/* Floating Map Legend */}
-        <div className="absolute bottom-4 left-4 z-20 bg-white/95 border border-[#EAEAEA] p-3 rounded-lg shadow-md max-w-[280px] text-[10px] text-[#37352F] space-y-1.5 pointer-events-none select-none">
+        <div className="absolute bottom-20 md:bottom-4 left-4 z-[400] bg-white/95 border border-[#EAEAEA] p-3 rounded-lg shadow-md max-w-[280px] text-[10px] text-[#37352F] space-y-1.5 pointer-events-none select-none">
           <span className="font-bold text-[#37352F] block">Estatus de Prospectos</span>
           <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
             <div className="flex items-center gap-1.5">
