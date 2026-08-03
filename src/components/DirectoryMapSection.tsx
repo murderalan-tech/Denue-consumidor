@@ -74,7 +74,18 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
       maxZoom: 20
     }).addTo(mapInstanceRef.current);
 
-    layerGroupRef.current = L.layerGroup().addTo(mapInstanceRef.current);
+    if (L.markerClusterGroup) {
+      layerGroupRef.current = L.markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 50,
+        spiderfyOnMaxZoom: true,
+        showCoverageOnHover: false,
+        zoomToBoundsOnClick: true
+      });
+    } else {
+      layerGroupRef.current = L.layerGroup();
+    }
+    mapInstanceRef.current.addLayer(layerGroupRef.current);
 
     return () => {
       if (mapInstanceRef.current) {
@@ -93,10 +104,9 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
     if (filteredEmpresas.length > 0) {
       const bounds: any[] = [];
-      // Max 500 map pins for smooth browser performance
-      const mapEmpresas = filteredEmpresas.slice(0, 500);
+      const markersToBatch: any[] = [];
 
-      mapEmpresas.forEach(emp => {
+      filteredEmpresas.forEach(emp => {
         if (!emp.latitud || !emp.longitud) return;
 
         // Determine color based on status
@@ -122,8 +132,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
           iconAnchor: [12, 12]
         });
 
-        const marker = L.marker([emp.latitud, emp.longitud], { icon: customIcon })
-          .addTo(layerGroupRef.current);
+        const marker = L.marker([emp.latitud, emp.longitud], { icon: customIcon });
 
         const popupContent = `
           <div class="p-1 select-none">
@@ -150,7 +159,17 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
             };
           }
         });
+
+        if (layerGroupRef.current.addLayers) {
+          markersToBatch.push(marker);
+        } else {
+          marker.addTo(layerGroupRef.current);
+        }
       });
+
+      if (layerGroupRef.current.addLayers && markersToBatch.length > 0) {
+        layerGroupRef.current.addLayers(markersToBatch);
+      }
 
       // Fit map bounds to show matches
       if (bounds.length > 0) {
