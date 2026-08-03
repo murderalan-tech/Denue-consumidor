@@ -3,10 +3,11 @@ export type Giro = 'refaccionaria' | 'taller_mecanico' | 'gasolinera';
 export type EstatusPros = 
   | 'sin_accion'
   | 'cliente'
-  | 'prospecto_validado'
+  | 'prospecto_real'
   | 'cliente_de_cliente'
-  | 'no_aplica'
+  | 'no_ligado_estrategia'
   | 'no_existe'
+  | 'ex_cliente_moroso'
   | 'prospectado';
 
 export type RolAsesor = 'asesor' | 'administrador';
@@ -32,12 +33,12 @@ export interface Empresa {
   asesorId: string | null; // null represents "No asesor"
   grupoGasolinero?: string; // only if giro === 'gasolinera'
   marcaCompetencia?: string; // sync from Plan de Trabajo or filled in plan
-  razonSocial?: string; // optional Razón Social from DENUE
+  razonSocial?: string; // optional RazÃ³n Social from DENUE
   ciudad?: string; // City where the company is located
   linkCrm360?: string; // Lead URL in CRM L360 (used for Gasolineras groups)
   comentariosNoAplica?: string; // Comments why gas station group does not apply
   vecesAgregadoAlPlan?: number; // Number of times added to work plan
-  // Plan history fields – persisted when prospecting cycle completes
+  // Plan history fields â€“ persisted when prospecting cycle completes
   planLinkCrm360?: string;
   planOportunidadCreada?: boolean;
   planLinkOportunidad360?: string;
@@ -82,29 +83,35 @@ export const ESTATUS_LABELS: Record<EstatusPros, { label: string; bg: string; te
     text: 'text-emerald-700', 
     border: 'border-emerald-200' 
   },
-  prospecto_validado: { 
-    label: 'Prospecto validado', 
+  prospecto_real: { 
+    label: 'Prospecto Real', 
     bg: 'bg-blue-50 text-blue-700 border-blue-200', 
     text: 'text-blue-700', 
     border: 'border-blue-200' 
   },
   cliente_de_cliente: { 
-    label: 'Cliente de cliente', 
+    label: 'Cliente de Cliente', 
     bg: 'bg-amber-50 text-amber-700 border-amber-250', 
     text: 'text-amber-700', 
     border: 'border-amber-200' 
   },
-  no_aplica: { 
-    label: 'No aplica', 
+  no_ligado_estrategia: { 
+    label: 'No Ligado a Estrategia', 
     bg: 'bg-slate-100 text-slate-500 border-slate-200', 
     text: 'text-slate-500', 
     border: 'border-slate-200' 
   },
   no_existe: { 
-    label: 'No existe', 
+    label: 'No Existe', 
     bg: 'bg-rose-50 text-rose-600 border-rose-200', 
     text: 'text-rose-600', 
     border: 'border-rose-200' 
+  },
+  ex_cliente_moroso: {
+    label: 'Ex-Cliente Moroso',
+    bg: 'bg-red-50 text-red-700 border-red-200',
+    text: 'text-red-700',
+    border: 'border-red-200'
   },
   prospectado: {
     label: 'Prospectado',

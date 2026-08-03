@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { 
   Fuel, 
   Search, 
@@ -21,7 +21,7 @@ interface GasolinerasListSectionProps {
 }
 
 interface GroupState {
-  estatus: 'prospecto_validado' | 'no_aplica';
+  estatus: 'prospecto_real' | 'no_ligado_estrategia';
   asesorId: string | null;
   linkCrm360: string;
   comentariosNoAplica: string;
@@ -30,7 +30,7 @@ interface GroupState {
 
 export default function GasolinerasListSection({ empresas, currentUser, onDataChange }: GasolinerasListSectionProps) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'prospecto_validado' | 'no_aplica'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'prospecto_real' | 'no_ligado_estrategia'>('all');
   const [asesorFilter, setAsesorFilter] = useState('all');
 
   const asesores = getAsesores().filter(a => a.rol === 'asesor');
@@ -57,12 +57,12 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
     const initialStates: Record<string, GroupState> = {};
     Object.entries(groupsMap).forEach(([groupName, stations]) => {
       const first = stations[0];
-      // Default to 'prospecto_validado' or 'no_aplica'
-      let defaultStatus: 'prospecto_validado' | 'no_aplica' = 'prospecto_validado';
-      if (first?.estatus === 'no_aplica') {
-        defaultStatus = 'no_aplica';
-      } else if (stations.some(s => s.estatus === 'prospecto_validado')) {
-        defaultStatus = 'prospecto_validado';
+      // Default to 'prospecto_real' or 'no_ligado_estrategia'
+      let defaultStatus: 'prospecto_real' | 'no_ligado_estrategia' = 'prospecto_real';
+      if (first?.estatus === 'no_ligado_estrategia') {
+        defaultStatus = 'no_ligado_estrategia';
+      } else if (stations.some(s => s.estatus === 'prospecto_real')) {
+        defaultStatus = 'prospecto_real';
       }
 
       initialStates[groupName] = {
@@ -98,14 +98,14 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
         ...station,
         estatus: groupState.estatus,
         asesorId: groupState.asesorId,
-        linkCrm360: groupState.estatus === 'prospecto_validado' ? groupState.linkCrm360.trim() : '',
-        comentariosNoAplica: groupState.estatus === 'no_aplica' ? groupState.comentariosNoAplica.trim() : '',
+        linkCrm360: groupState.estatus === 'prospecto_real' ? groupState.linkCrm360.trim() : '',
+        comentariosNoAplica: groupState.estatus === 'no_ligado_estrategia' ? groupState.comentariosNoAplica.trim() : '',
         fechaActualizacion: new Date().toISOString()
       };
       updateEmpresa(updatedStation);
 
-      // If prospecto_validado and linkCrm360 is filled, also update or create PlanTrabajo for prospection
-      if (groupState.estatus === 'prospecto_validado' && groupState.linkCrm360.trim()) {
+      // If prospecto_real and linkCrm360 is filled, also update or create PlanTrabajo for prospection
+      if (groupState.estatus === 'prospecto_real' && groupState.linkCrm360.trim()) {
         const existingPlans = getPlanTrabajo();
         const plan = existingPlans.find(p => p.empresaId === station.id) || {
           id: `plan_${Date.now()}_${station.id}`,
@@ -179,10 +179,10 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
           <Fuel className="w-5 h-5 text-blue-700" />
           <div>
             <h3 className="font-display font-bold text-sm text-[#37352F] uppercase tracking-wide leading-none">
-              Prospección por Grupos Gasolineros
+              ProspecciÃ³n por Grupos Gasolineros
             </h3>
             <span className="text-[10px] text-[#7C7B77] mt-1 block">
-              Gestión comercial centralizada a nivel grupo corporativo
+              GestiÃ³n comercial centralizada a nivel grupo corporativo
             </span>
           </div>
         </div>
@@ -207,8 +207,8 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
             className="px-2.5 py-1.5 bg-white border border-[#EAEAEA] rounded-md text-xs focus:outline-none shrink-0"
           >
             <option value="all">Estatus: Todos</option>
-            <option value="prospecto_validado">Prospecto Validado</option>
-            <option value="no_aplica">No Aplica</option>
+            <option value="prospecto_real">Prospecto Validado</option>
+            <option value="no_ligado_estrategia">No Aplica</option>
           </select>
 
           {/* Advisor filter (Admin only) */}
@@ -238,7 +238,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
         ) : (
           filteredGroupNames.map(groupName => {
             const state = editingGroups[groupName] || {
-              estatus: 'prospecto_validado',
+              estatus: 'prospecto_real',
               asesorId: null,
               linkCrm360: '',
               comentariosNoAplica: '',
@@ -261,7 +261,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
 
                   {/* Status Indicator Pill */}
                   <div>
-                    {state.estatus === 'prospecto_validado' ? (
+                    {state.estatus === 'prospecto_real' ? (
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold rounded-full uppercase">
                         <CheckCircle2 className="w-3.5 h-3.5" />
                         Prospecto Validado
@@ -288,9 +288,9 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
-                          onClick={() => handleFieldChange(groupName, 'estatus', 'prospecto_validado')}
+                          onClick={() => handleFieldChange(groupName, 'estatus', 'prospecto_real')}
                           className={`py-2 px-3 border rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                            state.estatus === 'prospecto_validado'
+                            state.estatus === 'prospecto_real'
                               ? 'bg-blue-50 border-blue-200 text-blue-700 font-bold shadow-2xs'
                               : 'bg-white border-[#EAEAEA] text-[#7C7B77] hover:bg-[#F1F1EF]'
                           }`}
@@ -301,9 +301,9 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
 
                         <button
                           type="button"
-                          onClick={() => handleFieldChange(groupName, 'estatus', 'no_aplica')}
+                          onClick={() => handleFieldChange(groupName, 'estatus', 'no_ligado_estrategia')}
                           className={`py-2 px-3 border rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                            state.estatus === 'no_aplica'
+                            state.estatus === 'no_ligado_estrategia'
                               ? 'bg-slate-100 border-slate-300 text-slate-700 font-bold shadow-2xs'
                               : 'bg-white border-[#EAEAEA] text-[#7C7B77] hover:bg-[#F1F1EF]'
                           }`}
@@ -342,7 +342,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                   {/* Column Right: Conditional Inputs */}
                   <div className="space-y-3 bg-[#FBFBFA]/60 border border-[#EAEAEA] p-3.5 rounded-xl flex flex-col justify-between">
                     
-                    {state.estatus === 'prospecto_validado' ? (
+                    {state.estatus === 'prospecto_real' ? (
                       /* CONDITIONAL A: LINK CRM L360 LEAD */
                       <div className="space-y-2 animate-in fade-in duration-150">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block flex items-center gap-1">

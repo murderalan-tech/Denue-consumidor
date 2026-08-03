@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { ChevronDown, LogOut, Shield, Users } from 'lucide-react';
 import { Asesor } from '../types';
 
@@ -69,7 +69,7 @@ export default function UserProfileSwitcher({ currentUser, onLogout }: UserProfi
             className="w-full text-left p-2 rounded-lg text-xs text-rose-600 hover:bg-rose-50 flex items-center gap-2 transition-colors cursor-pointer font-semibold"
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            Cerrar Sesión
+            Cerrar SesiÃ³n
           </button>
         </div>
       )}

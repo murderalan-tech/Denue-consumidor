@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 import {
   Trophy,
   Search,
@@ -121,7 +121,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
           </div>
           <div>
             <h2 className="font-display font-bold text-lg text-[#37352F] leading-none">Empresas Concluidas</h2>
-            <p className="text-[10px] text-[#7C7B77] mt-0.5">Seguimiento post-prospección · Empresas con ciclo completado</p>
+            <p className="text-[10px] text-[#7C7B77] mt-0.5">Seguimiento post-prospecciÃ³n Â· Empresas con ciclo completado</p>
           </div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#7C7B77]" />
           <input
             type="text"
-            placeholder="Buscar empresa o dirección..."
+            placeholder="Buscar empresa o direcciÃ³n..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-8 pr-3 py-2 bg-white border border-[#EAEAEA] rounded-lg text-xs focus:outline-none focus:border-blue-500 transition-colors"
@@ -182,7 +182,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
               className="text-[10px] text-rose-600 font-bold hover:underline ml-1 cursor-pointer"
               title="Limpiar fechas"
             >
-              ✕
+              âœ•
             </button>
           )}
         </div>
@@ -196,7 +196,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
           <option value="con_oportunidad">Con oportunidad creada</option>
           <option value="sin_oportunidad">Sin oportunidad</option>
           <option value="venta_concretada">Venta concretada</option>
-          <option value="venta_no_concretada">Sin venta aún</option>
+          <option value="venta_no_concretada">Sin venta aÃºn</option>
         </select>
       </div>
 
@@ -206,7 +206,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
           <div className="py-20 text-center text-xs text-[#7C7B77] bg-white border border-[#EAEAEA] rounded-xl">
             <Trophy className="w-8 h-8 mx-auto mb-3 text-neutral-300" />
             <p className="font-semibold">No hay empresas concluidas</p>
-            <p className="mt-1 text-[10px]">Cuando se complete el ciclo de prospección aparecerá aquí.</p>
+            <p className="mt-1 text-[10px]">Cuando se complete el ciclo de prospecciÃ³n aparecerÃ¡ aquÃ­.</p>
           </div>
         ) : (
           filtered.map((emp) => {
@@ -236,20 +236,20 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
                   <div className="flex items-center gap-2.5 shrink-0 ml-4">
                     {/* Asesor info */}
                     <span className="text-[10px] bg-neutral-100 text-[#37352F] border border-neutral-200 px-2 py-0.5 rounded font-medium flex items-center gap-1">
-                      👤 <strong className="font-semibold">{getAsesorName(emp.asesorId)}</strong>
+                      ðŸ‘¤ <strong className="font-semibold">{getAsesorName(emp.asesorId)}</strong>
                     </span>
 
                     {/* Fecha de concluido */}
                     {(emp.planFechaFin || emp.fechaActualizacion) && (
                       <span className="text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded font-medium flex items-center gap-1">
-                        📅 <span className="font-semibold">{new Date(emp.planFechaFin || emp.fechaActualizacion).toLocaleDateString("es-MX")}</span>
+                        ðŸ“… <span className="font-semibold">{new Date(emp.planFechaFin || emp.fechaActualizacion).toLocaleDateString("es-MX")}</span>
                       </span>
                     )}
 
                     {/* Volumen registrado */}
                     {emp.volumenPrimeraVenta && (
                       <span className="text-[10px] bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded font-medium flex items-center gap-1">
-                        📊 Vol: <strong className="font-semibold">{emp.volumenPrimeraVenta}</strong>
+                        ðŸ“Š Vol: <strong className="font-semibold">{emp.volumenPrimeraVenta}</strong>
                       </span>
                     )}
 
@@ -268,7 +268,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
                       </span>
                     ) : emp.ventaConcretada === false ? (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-neutral-100 text-neutral-500 border border-neutral-200 text-[9px] font-bold rounded-full">
-                        Sin venta aún
+                        Sin venta aÃºn
                       </span>
                     ) : null}
                     {isExpanded ? <ChevronUp className="w-4 h-4 text-[#7C7B77]" /> : <ChevronDown className="w-4 h-4 text-[#7C7B77]" />}
@@ -282,7 +282,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
 
                       {/* Left: Prospecting data */}
                       <div className="space-y-4">
-                        <h5 className="text-[10px] font-bold text-[#7C7B77] uppercase tracking-wider border-b border-[#EAEAEA] pb-1">Datos de prospección</h5>
+                        <h5 className="text-[10px] font-bold text-[#7C7B77] uppercase tracking-wider border-b border-[#EAEAEA] pb-1">Datos de prospecciÃ³n</h5>
 
                         <div className="space-y-1">
                           <p className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77]">Enlace CRM L360</p>
@@ -306,10 +306,10 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
                         </div>
 
                         <div className="space-y-1">
-                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77]">¿Oportunidad comercial?</p>
+                          <p className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77]">Â¿Oportunidad comercial?</p>
                           {emp.planOportunidadCreada === true ? (
                             <div className="space-y-1.5">
-                              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-bold"><CheckCircle2 className="w-3.5 h-3.5" /> Sí se creó</span>
+                              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 font-bold"><CheckCircle2 className="w-3.5 h-3.5" /> SÃ­ se creÃ³</span>
                               {emp.planLinkOportunidad360 && (
                                 <div>
                                   <a href={emp.planLinkOportunidad360} target="_blank" rel="noopener noreferrer"
@@ -321,7 +321,7 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
                             </div>
                           ) : emp.planOportunidadCreada === false ? (
                             <div>
-                              <span className="inline-flex items-center gap-1 text-xs text-rose-600 font-bold"><XCircle className="w-3.5 h-3.5" /> No se creó</span>
+                              <span className="inline-flex items-center gap-1 text-xs text-rose-600 font-bold"><XCircle className="w-3.5 h-3.5" /> No se creÃ³</span>
                               {emp.planMotivoNoOportunidad && (
                                 <p className="text-[10px] text-rose-700 mt-1 bg-rose-50 border border-rose-100 rounded px-2 py-1">
                                   Motivo: <span className="font-semibold">{emp.planMotivoNoOportunidad}</span>
@@ -333,8 +333,8 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
 
                         {emp.planFechaInicio && (
                           <div className="flex gap-4 text-[10px] text-[#7C7B77]">
-                            <span>📅 Inicio: <strong className="text-[#37352F]">{new Date(emp.planFechaInicio).toLocaleDateString("es-MX")}</strong></span>
-                            {emp.planFechaFin && <span>✅ Concluido: <strong className="text-[#37352F]">{new Date(emp.planFechaFin).toLocaleDateString("es-MX")}</strong></span>}
+                            <span>ðŸ“… Inicio: <strong className="text-[#37352F]">{new Date(emp.planFechaInicio).toLocaleDateString("es-MX")}</strong></span>
+                            {emp.planFechaFin && <span>âœ… Concluido: <strong className="text-[#37352F]">{new Date(emp.planFechaFin).toLocaleDateString("es-MX")}</strong></span>}
                           </div>
                         )}
                       </div>
@@ -342,25 +342,25 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
                       {/* Right: Post-sale */}
                       <div className="space-y-4">
                         <h5 className="text-[10px] font-bold text-[#7C7B77] uppercase tracking-wider border-b border-[#EAEAEA] pb-1">
-                          Seguimiento post-prospección
+                          Seguimiento post-prospecciÃ³n
                         </h5>
 
                         {emp.planOportunidadCreada === true ? (
                           <div className="space-y-4">
                             <div className="space-y-1.5">
-                              <label className="text-[10px] font-bold uppercase tracking-wider text-[#37352F] block">¿Se concretó la venta?</label>
+                              <label className="text-[10px] font-bold uppercase tracking-wider text-[#37352F] block">Â¿Se concretÃ³ la venta?</label>
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => setEditStates((prev) => ({ ...prev, [emp.id]: { ...prev[emp.id], ventaConcretada: true } }))}
                                   className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${state.ventaConcretada === true ? "bg-emerald-600 text-white border-emerald-600 shadow-sm" : "bg-white text-[#37352F] border-[#EAEAEA] hover:border-emerald-300 hover:bg-emerald-50"}`}
                                 >
-                                  ✅ Sí
+                                  âœ… SÃ­
                                 </button>
                                 <button
                                   onClick={() => setEditStates((prev) => ({ ...prev, [emp.id]: { ...prev[emp.id], ventaConcretada: false, volumenPrimeraVenta: "" } }))}
                                   className={`flex-1 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer ${state.ventaConcretada === false ? "bg-rose-500 text-white border-rose-500 shadow-sm" : "bg-white text-[#37352F] border-[#EAEAEA] hover:border-rose-300 hover:bg-rose-50"}`}
                                 >
-                                  ❌ No
+                                  âŒ No
                                 </button>
                               </div>
                             </div>
@@ -388,13 +388,13 @@ export default function EmpresasConcluidas({ onDataChange }: EmpresasConcluiSect
                               }`}
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
-                              {isSaved ? "Guardado ✓" : "Guardar seguimiento"}
+                              {isSaved ? "Guardado âœ“" : "Guardar seguimiento"}
                             </button>
                           </div>
                         ) : (
                           <div className="py-8 text-center text-[10px] text-neutral-400 bg-neutral-50 border border-dashed border-neutral-200 rounded-lg">
                             <XCircle className="w-6 h-6 mx-auto mb-2 text-neutral-300" />
-                            No se registró oportunidad comercial.
+                            No se registrÃ³ oportunidad comercial.
                             {emp.planMotivoNoOportunidad && <p className="mt-1 font-semibold text-neutral-500">{emp.planMotivoNoOportunidad}</p>}
                           </div>
                         )}

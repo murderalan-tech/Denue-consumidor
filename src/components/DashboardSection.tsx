@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -38,7 +38,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
   // 3. Count Completion Cycles
   // Cycle is completed if there is an active PlanTrabajo with cicloCompletado = true
   const getCycleStats = (giro?: 'refaccionaria' | 'taller_mecanico' | 'gasolinera') => {
-    const validatedEmpresas = filteredEmpresas.filter(e => e.estatus === 'prospecto_validado' && (!giro || e.giro === giro));
+    const validatedEmpresas = filteredEmpresas.filter(e => e.estatus === 'prospecto_real' && (!giro || e.giro === giro));
     const validatedIds = new Set(validatedEmpresas.map(e => e.id));
     
     const plansForFiltered = allPlans.filter(p => validatedIds.has(p.empresaId));
@@ -94,7 +94,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
   // Giro summaries
   const giros: Array<{ id: 'refaccionaria' | 'taller_mecanico' | 'gasolinera'; label: string; icon: any }> = [
     { id: 'refaccionaria', label: 'Refaccionarias', icon: Building },
-    { id: 'taller_mecanico', label: 'Talleres Mecánicos', icon: Target },
+    { id: 'taller_mecanico', label: 'Talleres MecÃ¡nicos', icon: Target },
     { id: 'gasolinera', label: 'Gasolineras', icon: TrendingUp }
   ];
 
@@ -108,7 +108,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
             Dashboard Comercial
           </h2>
           <p className="text-xs text-[#7C7B77] mt-0.5">
-            Métricas de prospección y cobertura comercial en Chihuahua.
+            MÃ©tricas de prospecciÃ³n y cobertura comercial en Chihuahua.
           </p>
         </div>
 
@@ -169,9 +169,9 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
           <div>
             <span className="text-[9px] uppercase font-bold text-[#7C7B77] block">Prospectos Validados</span>
             <span className="font-display font-extrabold text-xl text-blue-700">
-              {getStatusCount('prospecto_validado')}
+              {getStatusCount('prospecto_real')}
             </span>
-            <span className="text-[9px] text-[#7C7B77] block mt-0.5">En plan de prospección</span>
+            <span className="text-[9px] text-[#7C7B77] block mt-0.5">En plan de prospecciÃ³n</span>
           </div>
         </div>
 
@@ -181,7 +181,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
             <BarChart3 className="w-5 h-5" />
           </div>
           <div>
-            <span className="text-[9px] uppercase font-bold text-[#7C7B77] block">Avance de Prospección</span>
+            <span className="text-[9px] uppercase font-bold text-[#7C7B77] block">Avance de ProspecciÃ³n</span>
             <span className="font-display font-extrabold text-xl text-indigo-700">
               {globalCycle.percentage}%
             </span>
@@ -219,7 +219,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
                   {/* Progress bar cycle completed */}
                   {stats.total > 0 && (
                     <div className="flex items-center gap-2 text-[10px] text-[#7C7B77] font-semibold bg-neutral-50 px-2.5 py-1 rounded border border-[#EAEAEA]">
-                      <span>Prospección concluida:</span>
+                      <span>ProspecciÃ³n concluida:</span>
                       <span className="text-indigo-600 font-bold">{stats.completed}/{stats.total} ({stats.percentage}%)</span>
                     </div>
                   )}
@@ -239,7 +239,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
                 {/* Estatus Distribution list */}
                 <div className="space-y-3">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#7C7B77] block">
-                    Distribución de Cuentas por Estatus
+                    DistribuciÃ³n de Cuentas por Estatus
                   </span>
 
                   <div className="space-y-2.5">
@@ -276,14 +276,14 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
                       Ratios de Eficiencia Comercial
                     </span>
                     <p className="text-[11px] text-[#7C7B77] leading-relaxed">
-                      El <strong>Hit Rate Opp</strong> mide la tasa de éxito al convertir prospectos con ciclo concluido en oportunidades comerciales creadas en L360.
+                      El <strong>Hit Rate Opp</strong> mide la tasa de Ã©xito al convertir prospectos con ciclo concluido en oportunidades comerciales creadas en L360.
                     </p>
                   </div>
 
                   {/* Hit Rate Opp Highlight Card */}
                   <div className="bg-emerald-50/60 border border-emerald-200/80 p-3.5 rounded-lg space-y-2">
                     <div className="flex justify-between items-center text-xs font-bold text-emerald-900">
-                      <span>🎯 Hit Rate Opp</span>
+                      <span>ðŸŽ¯ Hit Rate Opp</span>
                       <span className="text-emerald-700 font-extrabold text-base">{hitRateStats.hitRate}%</span>
                     </div>
                     <div className="h-2 w-full bg-emerald-100 rounded-full overflow-hidden">

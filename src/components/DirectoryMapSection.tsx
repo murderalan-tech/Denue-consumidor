@@ -113,10 +113,11 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
         const statusColors: Record<EstatusPros, string> = {
           sin_accion: '#9ca3af',       // Gray
           cliente: '#10b981',          // Emerald
-          prospecto_validado: '#3b82f6', // Blue
+          prospecto_real: '#3b82f6',   // Blue
           cliente_de_cliente: '#f59e0b', // Amber
-          no_aplica: '#6b7280',        // Slate
+          no_ligado_estrategia: '#64748b', // Slate
           no_existe: '#ef4444',        // Red
+          ex_cliente_moroso: '#b91c1c', // Dark red
           prospectado: '#8b5cf6'       // Purple
         };
 
@@ -212,7 +213,9 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
                 className="w-full px-2 py-1 bg-white border border-[#EAEAEA] rounded text-xs focus:outline-none"
               >
                 <option value="all">Todos los estatus</option>
-                {Object.entries(ESTATUS_LABELS).map(([key, details]) => (
+                {Object.entries(ESTATUS_LABELS)
+                  .filter(([key]) => !(giro === 'refaccionaria' && key === 'cliente_de_cliente'))
+                  .map(([key, details]) => (
                   <option key={key} value={key}>{details.label}</option>
                 ))}
               </select>
@@ -268,9 +271,9 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
                   <div className="flex justify-between items-center text-[9px] pt-1.5 border-t border-[#F1F1EF] text-[#7C7B77]">
                     <span className="truncate max-w-[120px]">
-                      👤 {isAdmin ? (asesores.find(a => a.id === emp.asesorId)?.nombre || 'No asesor') : 'Tú'}
+                      ðŸ‘¤ {isAdmin ? (asesores.find(a => a.id === emp.asesorId)?.nombre || 'No asesor') : 'TÃº'}
                     </span>
-                    {emp.telefono && <span className="shrink-0">📞 Activo</span>}
+                    {emp.telefono && <span className="shrink-0">ðŸ“ž Activo</span>}
                   </div>
                 </div>
               );
@@ -284,24 +287,42 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
         <div ref={mapContainerRef} className="w-full h-full z-10" />
 
         {/* Floating Map Legend */}
-        <div className="absolute bottom-4 left-4 z-20 bg-white/95 border border-[#EAEAEA] p-3 rounded-lg shadow-md max-w-xs text-[10px] text-[#37352F] space-y-1.5 pointer-events-none select-none">
+        <div className="absolute bottom-4 left-4 z-20 bg-white/95 border border-[#EAEAEA] p-3 rounded-lg shadow-md max-w-[280px] text-[10px] text-[#37352F] space-y-1.5 pointer-events-none select-none">
           <span className="font-bold text-[#37352F] block">Estatus de Prospectos</span>
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#9ca3af' }} />
+              <span>Sin Acción</span>
+            </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#10b981' }} />
               <span>Cliente</span>
             </div>
             <div className="flex items-center gap-1.5">
               <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#3b82f6' }} />
-              <span>Validado</span>
+              <span>Prospecto Real</span>
+            </div>
+            {giro !== 'refaccionaria' && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
+                <span>C. de Cliente</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#64748b' }} />
+              <span>No Ligado a Est.</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#f59e0b' }} />
-              <span>C. de Cliente</span>
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#ef4444' }} />
+              <span>No Existe</span>
             </div>
             <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#9ca3af' }} />
-              <span>Sin Acción</span>
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#b91c1c' }} />
+              <span>Moroso</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: '#8b5cf6' }} />
+              <span>Prospectado</span>
             </div>
           </div>
         </div>

@@ -51,19 +51,19 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
   };
 
   const handleResetCycle = () => {
-    if (window.confirm(`¿Estás seguro de reiniciar el ciclo de prospección para "${empresa.nombre}"? Se borrarán los datos registrados del plan de trabajo y la empresa volverá a la lista de prospectos validados.`)) {
+    if (window.confirm(`Â¿EstÃ¡s seguro de reiniciar el ciclo de prospecciÃ³n para "${empresa.nombre}"? Se borrarÃ¡n los datos registrados del plan de trabajo y la empresa volverÃ¡ a la lista de prospectos validados.`)) {
       // 1. Delete work plan entry
       deletePlanTrabajoByEmpresa(empresa.id);
 
-      // 2. Clear company competitor brand and set status to prospecto_validado
+      // 2. Clear company competitor brand and set status to prospecto_real
       const updatedEmpresa: Empresa = {
         ...empresa,
-        estatus: 'prospecto_validado',
+        estatus: 'prospecto_real',
         marcaCompetencia: '',
         fechaActualizacion: new Date().toISOString()
       };
 
-      setEstatus('prospecto_validado');
+      setEstatus('prospecto_real');
       onSave(updatedEmpresa);
       onClose();
     }
@@ -120,11 +120,11 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-purple-900 uppercase tracking-wide flex items-center gap-1.5">
                   <span className="w-2.5 h-2.5 bg-purple-600 rounded-full inline-block"></span>
-                  Ciclo de prospección concluido
+                  Ciclo de prospecciÃ³n concluido
                 </span>
               </div>
               <p className="text-[11px] text-purple-700 leading-relaxed">
-                Esta empresa ya completó su ciclo de prospección (estatus PROSPECTADO). Puedes reiniciar el ciclo si necesitas realizar una nueva labor comercial.
+                Esta empresa ya completÃ³ su ciclo de prospecciÃ³n (estatus PROSPECTADO). Puedes reiniciar el ciclo si necesitas realizar una nueva labor comercial.
               </p>
               <button
                 type="button"
@@ -140,7 +140,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
           {/* Read-Only Details */}
           <div className="space-y-3 p-4 bg-[#F7F7F5] rounded-lg border border-[#EAEAEA] text-xs">
             <div className="grid grid-cols-3">
-              <span className="text-[#7C7B77] font-semibold">Dirección</span>
+              <span className="text-[#7C7B77] font-semibold">DirecciÃ³n</span>
               <span className="col-span-2 text-[#37352F]">{empresa.direccion}</span>
             </div>
             <div className="grid grid-cols-3">
@@ -154,7 +154,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
               </div>
             )}
             <div className="grid grid-cols-3 items-center">
-              <span className="text-[#7C7B77] font-semibold">GPS / Ubicación</span>
+              <span className="text-[#7C7B77] font-semibold">GPS / UbicaciÃ³n</span>
               <div className="col-span-2 flex items-center justify-between gap-2">
                 <span className="text-[#7C7B77] font-mono text-[11px]">{empresa.latitud}, {empresa.longitud}</span>
                 <button
@@ -175,17 +175,17 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
               Datos de Contacto
             </h4>
 
-            {/* Teléfono */}
+            {/* TelÃ©fono */}
             <div className="space-y-1">
               <label className="text-xs font-semibold text-[#37352F] flex items-center gap-1.5">
                 <Phone className="w-3.5 h-3.5 text-[#7C7B77]" />
-                Teléfono de Contacto
+                TelÃ©fono de Contacto
               </label>
               <input
                 type="text"
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
-                placeholder="Ingresa número de teléfono..."
+                placeholder="Ingresa nÃºmero de telÃ©fono..."
                 className="w-full px-3 py-2 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
               />
             </div>
@@ -222,7 +222,9 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
                 onChange={(e) => setEstatus(e.target.value as EstatusPros)}
                 className="w-full px-3 py-2 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
               >
-                {Object.entries(ESTATUS_LABELS).map(([key, details]) => (
+                {Object.entries(ESTATUS_LABELS)
+                  .filter(([key]) => !(empresa.giro === 'refaccionaria' && key === 'cliente_de_cliente'))
+                  .map(([key, details]) => (
                   <option key={key} value={key}>
                     {details.label}
                   </option>

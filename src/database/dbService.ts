@@ -1,4 +1,4 @@
-import { initializeApp, getApp, getApps } from 'firebase/app';
+﻿import { initializeApp, getApp, getApps } from 'firebase/app';
 import { 
   getFirestore, 
   collection, 
@@ -72,9 +72,9 @@ if (config) {
     db = getFirestore(app);
     auth = getAuth(app);
     isFirebaseActive = true;
-    console.log("🔥 Connected to Firebase Cloud Firestore and Firebase Auth successfully!");
+    console.log("ðŸ”¥ Connected to Firebase Cloud Firestore and Firebase Auth successfully!");
   } catch (error) {
-    console.error("❌ Failed to initialize Firebase App:", error);
+    console.error("âŒ Failed to initialize Firebase App:", error);
   }
 }
 
@@ -86,7 +86,7 @@ export function isCloudActive(): boolean {
 
 export async function loginWithFirebaseGoogle(): Promise<{ email: string; name: string; photoURL?: string } | null> {
   if (!auth) {
-    alert("⚠️ Configuración de Firebase Cloud no activa.\n\nPega tu configuración en el ícono de engrane ⚙️ de la pantalla de Login.");
+    alert("âš ï¸ ConfiguraciÃ³n de Firebase Cloud no activa.\n\nPega tu configuraciÃ³n en el Ã­cono de engrane âš™ï¸ de la pantalla de Login.");
     return null;
   }
 
@@ -106,7 +106,7 @@ export async function loginWithFirebaseGoogle(): Promise<{ email: string; name: 
   } catch (error: any) {
     console.error("Firebase Google Auth login failed:", error);
     if (error.code !== 'auth/popup-closed-by-user') {
-      alert(`Error de autenticación Firebase Google: ${error.message}`);
+      alert(`Error de autenticaciÃ³n Firebase Google: ${error.message}`);
     }
     return null;
   }
@@ -349,6 +349,6 @@ export function deleteAsesor(id: string): void {
 export function resetDb(): void {
   localDb.resetDb();
   if (isCloudActive()) {
-    console.log("🧹 Local cache cleared. Cloud collections in Firestore remain untouched.");
+    console.log("ðŸ§¹ Local cache cleared. Cloud collections in Firestore remain untouched.");
   }
 }

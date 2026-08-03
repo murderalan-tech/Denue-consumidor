@@ -1,4 +1,4 @@
-import { Empresa, Asesor, PlanTrabajo } from '../types';
+﻿import { Empresa, Asesor, PlanTrabajo } from '../types';
 import { SEED_ASESORES, SEED_EMPRESAS, SEED_PLANTTRABAJO } from './initialSeed';
 
 const KEY_EMPRESAS = 'denue_pv_empresas';
@@ -88,7 +88,7 @@ export function updateEmpresa(updatedEmpresa: Empresa): Empresa {
     };
     localStorage.setItem(KEY_EMPRESAS, JSON.stringify(empresas));
     
-    if (updatedEmpresa.estatus !== 'prospecto_validado') {
+    if (updatedEmpresa.estatus !== 'prospecto_real') {
       const plans = getPlanTrabajo();
       const planIdx = plans.findIndex(p => p.empresaId === updatedEmpresa.id);
       if (planIdx !== -1) {
@@ -143,7 +143,7 @@ export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
     // 1. Delete plan of work
     deletePlanTrabajoByEmpresa(plan.empresaId);
 
-    // 2. Keep company as prospecto_validado and mark visitado flag if needed or log
+    // 2. Keep company as prospecto_real and mark visitado flag if needed or log
     const empIdx = empresas.findIndex(e => e.id === plan.empresaId);
     if (empIdx !== -1) {
       empresas[empIdx] = {
