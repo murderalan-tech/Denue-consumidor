@@ -16,6 +16,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const [asesorFilter, setAsesorFilter] = useState<string>('all');
   const [cityFilter, setCityFilter] = useState<string>('all');
   const [shouldFitBounds, setShouldFitBounds] = useState(true);
+  const [visibleEmpresas, setVisibleEmpresas] = useState<Empresa[]>([]);
 
   // When filters change, we want to re-fit the bounds
   useEffect(() => {
@@ -186,6 +187,19 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
         layerGroupRef.current.addLayers(markersToBatch);
       }
 
+      const handleMoveEnd = () => {
+        if (!mapInstanceRef.current) return;
+        const currentBounds = mapInstanceRef.current.getBounds();
+        const visible = filteredEmpresas.filter(emp => {
+          if (!emp.latitud || !emp.longitud) return false;
+          return currentBounds.contains(L.latLng(emp.latitud, emp.longitud));
+        });
+        setVisibleEmpresas(visible);
+      };
+
+      mapInstanceRef.current.off('moveend');
+      mapInstanceRef.current.on('moveend', handleMoveEnd);
+
       // Fit map bounds to show matches
       if (bounds.length > 0 && shouldFitBounds) {
         mapInstanceRef.current.fitBounds(L.latLngBounds(bounds), {
@@ -193,7 +207,11 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
           maxZoom: 14
         });
         setShouldFitBounds(false); // Only fit bounds once per filter change
+      } else {
+        handleMoveEnd();
       }
+    } else {
+      setVisibleEmpresas([]);
     }
   }, [filteredEmpresas]);
 
@@ -273,12 +291,15 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
         {/* Scrollable list */}
         <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar bg-neutral-50/50">
-          {filteredEmpresas.length === 0 ? (
+          <div className="text-[10px] font-bold text-[#7C7B77] uppercase tracking-wider px-1 pb-1">
+            Viendo {visibleEmpresas.length} {visibleEmpresas.length === 1 ? 'empresa' : 'empresas'} en el mapa
+          </div>
+          {visibleEmpresas.length === 0 ? (
             <div className="py-10 text-center text-xs text-[#7C7B77]">
-              No se encontraron {giro === 'refaccionaria' ? 'refaccionarias' : 'talleres'}.
+              No hay {giro === 'refaccionaria' ? 'refaccionarias' : 'talleres'} visibles en esta área.
             </div>
           ) : (
-            filteredEmpresas.map(emp => {
+            visibleEmpresas.map(emp => {
               const estLabel = ESTATUS_LABELS[emp.estatus];
               return (
                 <div
