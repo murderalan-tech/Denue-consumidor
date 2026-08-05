@@ -11,7 +11,7 @@ import {
   UserPlus,
   Trash2
 } from 'lucide-react';
-import { Empresa, Giro, Asesor, RolAsesor } from '../types';
+import { Empresa, Giro, Asesor, RolAsesor, EstatusPros } from '../types';
 import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor, deleteAllEmpresas } from '../database/dbService';
 
 interface AdminPanelSectionProps {
@@ -32,6 +32,7 @@ interface ParsedCSVRow {
   razonSocial: string;
   grupoGasolinero: string;
   correoAsesor: string;
+  estatus: string;
   asesorId: string | null;
   isValid: boolean;
   error?: string;
@@ -217,13 +218,14 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       'Contacto',
       'RazonSocial',
       'GrupoGasolinero',
-      'CorreoAsesor'
+      'CorreoAsesor',
+      'Estatus'
     ];
 
     const sampleRows = [
-      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe', 'Chihuahua', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com'],
-      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203', 'Juárez', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com'],
-      ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500', 'Chihuahua', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex', 'juan.lopez@alchisa.com']
+      ['Refaccionaria La Cúpula', 'refaccionaria', '28.639102', '-106.082049', 'Av. Universidad 491, Col. San Felipe', 'Chihuahua', '6145892301', 'Ing. Pedro Lopez', 'AUTO REFACCIONES LA CUPULA S.A.', '', 'juan.lopez@alchisa.com', 'sin_accion'],
+      ['Taller Automotriz Ruiz', 'taller_mecanico', '31.734560', '-106.412490', 'Av. Triunfo de la Republica 203', 'Juárez', '6561234567', 'Sr. Mario Ruiz', 'TALLER MECANICO RUIZ S.A. DE C.V.', '', 'maria.gomez@alchisa.com', 'cliente'],
+      ['Gasolinera Pemex Juventud', 'gasolinera', '28.651230', '-106.134560', 'Av. Periferico de la Juventud 4500', 'Chihuahua', '6149876543', 'Lic. Diana Soto', 'SERVICIOS GASOLINEROS DE CHIHUAHUA', 'Grupo Pemex', 'juan.lopez@alchisa.com', 'sin_accion']
     ];
 
     const csvContent = '\uFEFF' + [
@@ -304,6 +306,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
         const razonCol = columns[8] || '';
         const groupCol = columns[9] || '';
         const correoAsesorCol = (columns[10] || '').trim().toLowerCase();
+        
+        let estatusCol = (columns[11] || '').trim().toLowerCase();
+        const validEstatus = ['sin_accion', 'cliente', 'prospecto_real', 'cliente_de_cliente', 'no_ligado_estrategia', 'no_existe', 'ex_cliente_moroso', 'prospectado'];
+        if (!validEstatus.includes(estatusCol)) {
+          estatusCol = 'sin_accion';
+        }
 
         const latVal = parseFloat(latColStr);
         const lngVal = parseFloat(lngColStr);
@@ -346,6 +354,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
           razonSocial: razonCol || 'N/A',
           grupoGasolinero: groupCol,
           correoAsesor: correoAsesorCol,
+          estatus: estatusCol,
           asesorId: matchedAsesorId,
           isValid,
           error: errorMsg
@@ -374,7 +383,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
         direccion: r.direccion.trim(),
         telefono: r.telefono.trim(),
         contacto: r.contacto.trim(),
-        estatus: 'sin_accion',
+        estatus: r.estatus as EstatusPros,
         asesorId: r.asesorId,
         fechaActualizacion: new Date().toISOString()
       };
