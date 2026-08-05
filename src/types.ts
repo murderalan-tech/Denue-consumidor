@@ -24,8 +24,8 @@ export interface Empresa {
   id: string;
   nombre: string;
   giro: Giro;
-  latitud: number;
-  longitud: number;
+  latitud: number | null;
+  longitud: number | null;
   direccion: string;
   telefono: string;
   contacto: string;

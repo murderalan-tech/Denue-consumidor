@@ -143,15 +143,20 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   // --- MANUAL LOAD ACTION ---
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!nombre.trim() || !direccion.trim() || !latitud.trim() || !longitud.trim()) {
-      alert("Por favor completa los campos requeridos (*): Nombre, Dirección, Latitud y Longitud.");
+    if (!nombre.trim()) {
+      alert("Por favor completa el Nombre Comercial.");
+      return;
+    }
+
+    if (giro !== 'gasolinera' && (!direccion.trim() || !latitud.trim() || !longitud.trim())) {
+      alert("Por favor completa los campos requeridos (*): Dirección, Latitud y Longitud.");
       return;
     }
 
     const latNum = parseFloat(latitud);
     const lngNum = parseFloat(longitud);
 
-    if (isNaN(latNum) || isNaN(lngNum)) {
+    if (giro !== 'gasolinera' && (isNaN(latNum) || isNaN(lngNum))) {
       alert("Por favor ingresa coordenadas válidas en Latitud y Longitud (números).");
       return;
     }
@@ -166,8 +171,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
       nombre: nombre.trim(),
       razonSocial: razonSocial.trim() || 'N/A',
       giro,
-      latitud: latNum,
-      longitud: lngNum,
+      latitud: isNaN(latNum) ? null : latNum,
+      longitud: isNaN(lngNum) ? null : lngNum,
       direccion: direccion.trim(),
       telefono: telefono.trim(),
       contacto: contacto.trim(),
@@ -333,10 +338,10 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
         } else if (giroCol !== 'refaccionaria' && giroCol !== 'taller_mecanico' && giroCol !== 'gasolinera') {
           isValid = false;
           errorMsg = `Giro inválido (${giroCol})`;
-        } else if (isNaN(latVal) || isNaN(lngVal)) {
+        } else if (giroCol !== 'gasolinera' && (isNaN(latVal) || isNaN(lngVal))) {
           isValid = false;
           errorMsg = 'Coordenadas GPS inválidas';
-        } else if (!dirCol.trim()) {
+        } else if (giroCol !== 'gasolinera' && !dirCol.trim()) {
           isValid = false;
           errorMsg = 'Dirección vacía';
         }
@@ -378,8 +383,8 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
         nombre: r.nombre.trim(),
         razonSocial: r.razonSocial.trim(),
         giro: r.giro as Giro,
-        latitud: r.latitud!,
-        longitud: r.longitud!,
+        latitud: r.latitud,
+        longitud: r.longitud,
         direccion: r.direccion.trim(),
         telefono: r.telefono.trim(),
         contacto: r.contacto.trim(),
@@ -596,11 +601,11 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
               <div className="space-y-1">
                 <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
-                  Dirección del Establecimiento *
+                  Dirección del Establecimiento {giro !== 'gasolinera' && '*'}
                 </label>
                 <input
                   type="text"
-                  required
+                  required={giro !== 'gasolinera'}
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
                   placeholder="Calle, Número, Colonia"
@@ -624,12 +629,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
-                    Latitud (Coordenadas) *
+                    Latitud (Coordenadas) {giro !== 'gasolinera' && '*'}
                   </label>
                   <input
                     type="number"
                     step="0.000001"
-                    required
+                    required={giro !== 'gasolinera'}
                     value={latitud}
                     onChange={(e) => setLatitud(e.target.value)}
                     placeholder="Ej. 28.635300"
@@ -639,12 +644,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-[#7C7B77] uppercase block">
-                    Longitud (Coordenadas) *
+                    Longitud (Coordenadas) {giro !== 'gasolinera' && '*'}
                   </label>
                   <input
                     type="number"
                     step="0.000001"
-                    required
+                    required={giro !== 'gasolinera'}
                     value={longitud}
                     onChange={(e) => setLongitud(e.target.value)}
                     placeholder="Ej. -106.088900"
