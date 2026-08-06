@@ -13,7 +13,7 @@ import {
   Firestore
 } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, signInWithPopup, Auth } from 'firebase/auth';
-import { Empresa, PlanTrabajo, Asesor } from '../types';
+import { Empresa, PlanTrabajo, Asesor, Giro } from '../types';
 import * as localDb from './localDb';
 
 export interface FirebaseConfig {
@@ -179,21 +179,46 @@ export function addEmpresa(empresa: Empresa): Empresa {
   return updated;
 }
 
-export function deleteAllEmpresas(): void {
-  localDb.deleteAllEmpresas();
+export function deleteAllEmpresas(giro?: Giro): void {
+  let deletedIds = new Set<string>();
+  if (giro) {
+    deletedIds = new Set(localDb.getEmpresas().filter(e => e.giro === giro).map(e => e.id));
+  }
+  
+  localDb.deleteAllEmpresas(giro);
 
   if (isCloudActive() && db) {
-    getDocs(collection(db, 'empresas')).then(snap => {
-      const batch = writeBatch(db!);
-      snap.forEach(d => batch.delete(d.ref));
-      batch.commit();
-    }).catch(err => console.error("Cloud deleteAllEmpresas failed:", err));
+    if (giro) {
+       const empresasQuery = query(collection(db, 'empresas'), where('giro', '==', giro));
+       getDocs(empresasQuery).then(snap => {
+         const batch = writeBatch(db!);
+         snap.forEach(d => batch.delete(d.ref));
+         batch.commit();
+       }).catch(err => console.error("Cloud deleteAllEmpresas failed:", err));
 
-    getDocs(collection(db, 'plan_trabajo')).then(snap => {
-      const batch = writeBatch(db!);
-      snap.forEach(d => batch.delete(d.ref));
-      batch.commit();
-    }).catch(err => console.error("Cloud deleteAllPlanTrabajo failed:", err));
+       getDocs(collection(db, 'plan_trabajo')).then(snap => {
+         const batch = writeBatch(db!);
+         snap.forEach(d => {
+            const data = d.data();
+            if (deletedIds.has(data.empresaId)) {
+                batch.delete(d.ref);
+            }
+         });
+         batch.commit();
+       }).catch(err => console.error("Cloud deleteAllPlanTrabajo failed:", err));
+    } else {
+      getDocs(collection(db, 'empresas')).then(snap => {
+        const batch = writeBatch(db!);
+        snap.forEach(d => batch.delete(d.ref));
+        batch.commit();
+      }).catch(err => console.error("Cloud deleteAllEmpresas failed:", err));
+
+      getDocs(collection(db, 'plan_trabajo')).then(snap => {
+        const batch = writeBatch(db!);
+        snap.forEach(d => batch.delete(d.ref));
+        batch.commit();
+      }).catch(err => console.error("Cloud deleteAllPlanTrabajo failed:", err));
+    }
   }
 }
 

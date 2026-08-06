@@ -11,7 +11,7 @@ import {
   UserPlus,
   Trash2
 } from 'lucide-react';
-import { Empresa, Giro, Asesor, RolAsesor, EstatusPros } from '../types';
+import { Empresa, Giro, Asesor, RolAsesor, EstatusPros, GIRO_LABELS } from '../types';
 import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor, deleteAllEmpresas } from '../database/dbService';
 
 interface AdminPanelSectionProps {
@@ -67,6 +67,9 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const [uploadProgress, setUploadProgress] = useState(0); // 0 to 100
   const [uploadedCount, setUploadedCount] = useState(0);
   const [totalToUpload, setTotalToUpload] = useState(0);
+
+  // Delete Select State
+  const [deleteTarget, setDeleteTarget] = useState<'todo' | Giro>('todo');
 
   // Admin Form States
   const [adminNombre, setAdminNombre] = useState('');
@@ -435,10 +438,21 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
   // --- DELETE ALL EMPRESAS ACTION ---
   const handleDeleteAllEmpresas = () => {
-    const confirmMsg = "⚠️ ¿Estás seguro de que deseas ELIMINAR TODAS las empresas de la base de datos?\n\nEsta acción borrará todas las refaccionarias, talleres, gasolineras y sus planes de trabajo asociados. Esta acción no se puede deshacer.";
+    let confirmMsg = "⚠️ ¿Estás seguro de que deseas ELIMINAR TODAS las empresas de la base de datos?\n\nEsta acción borrará todas las refaccionarias, talleres, gasolineras y sus planes de trabajo asociados. Esta acción no se puede deshacer.";
+    
+    if (deleteTarget !== 'todo') {
+      const label = GIRO_LABELS[deleteTarget as Giro];
+      confirmMsg = `⚠️ ¿Estás seguro de que deseas ELIMINAR ÚNICAMENTE la categoría de ${label}?\n\nEsta acción borrará todos los registros de ${label.toLowerCase()} y sus planes de trabajo asociados. Esta acción no se puede deshacer.`;
+    }
+
     if (window.confirm(confirmMsg)) {
-      deleteAllEmpresas();
-      setBulkSuccessMsg("Se eliminaron todas las empresas del catálogo.");
+      if (deleteTarget === 'todo') {
+        deleteAllEmpresas();
+        setBulkSuccessMsg("Se eliminaron todas las empresas del catálogo.");
+      } else {
+        deleteAllEmpresas(deleteTarget as Giro);
+        setBulkSuccessMsg(`Se eliminó la categoría de ${GIRO_LABELS[deleteTarget as Giro]} del catálogo.`);
+      }
       setParsedRows([]);
       setCsvFileName('');
       onDataChange();
@@ -730,15 +744,28 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <button
-                  type="button"
-                  onClick={handleDeleteAllEmpresas}
-                  className="py-2 px-3 bg-rose-50 hover:bg-rose-100 text-rose-700 rounded-lg border border-rose-200 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer"
-                  title="Eliminar todas las empresas del sistema"
-                >
-                  <Trash2 className="w-4 h-4 text-rose-600" />
-                  Vaciar Catálogo
-                </button>
+                <div className="flex items-center bg-rose-50 rounded-lg border border-rose-200 overflow-hidden">
+                  <select 
+                    value={deleteTarget}
+                    onChange={(e) => setDeleteTarget(e.target.value as 'todo' | Giro)}
+                    className="bg-transparent text-rose-700 text-xs font-bold py-2 pl-3 pr-1 focus:outline-none cursor-pointer appearance-none outline-none"
+                    title="Selecciona qué eliminar"
+                  >
+                    <option value="todo">Todo el Catálogo</option>
+                    <option value="refaccionaria">Solo Refaccionarias</option>
+                    <option value="taller_mecanico">Solo Talleres</option>
+                    <option value="gasolinera">Solo Gasolineras</option>
+                  </select>
+                  <button
+                    type="button"
+                    onClick={handleDeleteAllEmpresas}
+                    className="py-2 px-3 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border-l border-rose-200"
+                    title="Ejecutar eliminación"
+                  >
+                    <Trash2 className="w-4 h-4 text-rose-600" />
+                    Vaciar
+                  </button>
+                </div>
 
                 <button
                   onClick={handleDownloadTemplate}

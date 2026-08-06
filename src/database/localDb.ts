@@ -100,9 +100,20 @@ export function updateEmpresa(updatedEmpresa: Empresa): Empresa {
   return updatedEmpresa;
 }
 
-export function deleteAllEmpresas(): void {
-  localStorage.setItem(KEY_EMPRESAS, JSON.stringify([]));
-  localStorage.setItem(KEY_PLAN_TRABAJO, JSON.stringify([]));
+export function deleteAllEmpresas(giro?: string): void {
+  if (giro) {
+    const empresas = getEmpresas();
+    const remainingEmpresas = empresas.filter(e => e.giro !== giro);
+    localStorage.setItem(KEY_EMPRESAS, JSON.stringify(remainingEmpresas));
+
+    const deletedIds = new Set(empresas.filter(e => e.giro === giro).map(e => e.id));
+    const plans = getPlanTrabajo();
+    const remainingPlans = plans.filter(p => !deletedIds.has(p.empresaId));
+    localStorage.setItem(KEY_PLAN_TRABAJO, JSON.stringify(remainingPlans));
+  } else {
+    localStorage.setItem(KEY_EMPRESAS, JSON.stringify([]));
+    localStorage.setItem(KEY_PLAN_TRABAJO, JSON.stringify([]));
+  }
 }
 
 export function savePlanTrabajo(plan: PlanTrabajo): PlanTrabajo {
