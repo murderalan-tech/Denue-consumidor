@@ -248,13 +248,13 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
             return (
               <div 
                 key={groupName}
-                className="bg-white border border-[#EAEAEA] rounded-xl shadow-xs p-5 space-y-4 hover:border-neutral-300 transition-all"
+                className="bg-white border border-[#EAEAEA] rounded-xl shadow-xs p-3 space-y-2 hover:border-neutral-300 transition-all"
               >
                 {/* Group Card Header */}
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-[#F1F1EF]">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-blue-50 text-blue-700 rounded-lg">
-                      <Fuel className="w-5 h-5" />
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-[#F1F1EF]">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 bg-blue-50 text-blue-700 rounded-md">
+                      <Fuel className="w-4 h-4" />
                     </div>
                     <h4 className="font-display font-bold text-sm text-[#37352F]">{groupName}</h4>
                   </div>
@@ -275,10 +275,10 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                 </div>
 
                 {/* Form Controls Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-5 pt-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
                   
                   {/* Column Left: Status & Advisor Selection */}
-                  <div className="space-y-3.5">
+                  <div className="space-y-2">
                     
                     {/* Estatus Selector (Restricted to Prospecto Validado / No Aplica) */}
                     <div className="space-y-1">
@@ -289,20 +289,20 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                         <button
                           type="button"
                           onClick={() => handleFieldChange(groupName, 'estatus', 'prospecto_real')}
-                          className={`py-2 px-3 border rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          className={`py-1.5 px-2 border rounded-md text-[11px] font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer ${
                             state.estatus === 'prospecto_real'
                               ? 'bg-blue-50 border-blue-200 text-blue-700 font-bold shadow-2xs'
                               : 'bg-white border-[#EAEAEA] text-[#7C7B77] hover:bg-[#F1F1EF]'
                           }`}
                         >
-                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <CheckCircle2 className="w-3 h-3" />
                           Prospecto Validado
                         </button>
 
                         <button
                           type="button"
                           onClick={() => handleFieldChange(groupName, 'estatus', 'no_ligado_estrategia')}
-                          className={`py-2 px-3 border rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                          className={`py-1.5 px-2 border rounded-md text-[11px] font-semibold transition-all flex items-center justify-center gap-1 cursor-pointer ${
                             state.estatus === 'no_ligado_estrategia'
                               ? 'bg-slate-100 border-slate-300 text-slate-700 font-bold shadow-2xs'
                               : 'bg-white border-[#EAEAEA] text-[#7C7B77] hover:bg-[#F1F1EF]'
@@ -323,7 +323,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                         <select
                           value={state.asesorId || ''}
                           onChange={(e) => handleFieldChange(groupName, 'asesorId', e.target.value === '' ? null : e.target.value)}
-                          className="w-full px-3 py-1.8 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all"
+                          className="w-full px-2 py-1 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-md text-[11px] focus:outline-none transition-all"
                         >
                           <option value="">No asesor (Sin asignar)</option>
                           {asesores.map(a => (
@@ -331,7 +331,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                           ))}
                         </select>
                       ) : (
-                        <div className="px-3 py-1.8 bg-neutral-50 border border-[#EAEAEA] rounded-lg text-xs font-semibold text-[#37352F]">
+                        <div className="px-2 py-1 bg-neutral-50 border border-[#EAEAEA] rounded-md text-[11px] font-semibold text-[#37352F]">
                           {state.asesorId ? (asesores.find(a => a.id === state.asesorId)?.nombre || 'Asesor Asignado') : 'Sin Asignar'}
                         </div>
                       )}
@@ -340,11 +340,11 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                   </div>
 
                   {/* Column Right: Conditional Inputs */}
-                  <div className="space-y-3 bg-[#FBFBFA]/60 border border-[#EAEAEA] p-3.5 rounded-xl flex flex-col justify-between">
+                  <div className="space-y-2 bg-[#FBFBFA]/60 border border-[#EAEAEA] p-2.5 rounded-xl flex flex-col justify-between">
                     
                     {state.estatus === 'prospecto_real' ? (
                       /* CONDITIONAL A: LINK CRM L360 LEAD */
-                      <div className="space-y-2 animate-in fade-in duration-150">
+                      <div className="space-y-1 animate-in fade-in duration-150">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block flex items-center gap-1">
                           <Link2 className="w-3.5 h-3.5" />
                           Enlace de Lead en CRM L360 (Google / CRM) *
@@ -355,7 +355,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                             placeholder="https://crm360.alchisa.com/lead/..."
                             value={state.linkCrm360}
                             onChange={(e) => handleFieldChange(groupName, 'linkCrm360', e.target.value)}
-                            className="w-full px-3 py-2 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all pr-8"
+                            className="w-full px-2 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-md text-[11px] focus:outline-none transition-all pr-8"
                           />
                           {state.linkCrm360 && (
                             <a
@@ -375,17 +375,17 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                       </div>
                     ) : (
                       /* CONDITIONAL B: COMENTARIOS NO APLICA */
-                      <div className="space-y-2 animate-in fade-in duration-150">
+                      <div className="space-y-1 animate-in fade-in duration-150">
                         <label className="text-[10px] font-bold uppercase tracking-wider text-slate-600 block flex items-center gap-1">
                           <MessageSquare className="w-3.5 h-3.5" />
                           Comentarios / Motivo por el cual No Aplica *
                         </label>
                         <textarea
-                          rows={3}
+                          rows={2}
                           placeholder="Escriba los comentarios detallados por los cuales este grupo no aplica..."
                           value={state.comentariosNoAplica}
                           onChange={(e) => handleFieldChange(groupName, 'comentariosNoAplica', e.target.value)}
-                          className="w-full px-3 py-2 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-lg text-xs focus:outline-none transition-all resize-none"
+                          className="w-full px-2 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded-md text-[11px] focus:outline-none transition-all resize-none"
                         />
                         <span className="text-[9px] text-[#7C7B77] block">
                           Describe las razones comerciales o institucionales por las cuales el grupo fue descartado.
@@ -394,12 +394,12 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                     )}
 
                     {/* Save Button */}
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-1">
                       <button
                         type="button"
                         onClick={() => handleSaveGroup(groupName)}
                         disabled={state.isSaved}
-                        className={`px-4 py-1.8 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs ${
+                        className={`px-3 py-1.5 rounded-md text-[11px] font-bold flex items-center gap-1 transition-all shadow-2xs ${
                           state.isSaved 
                             ? 'bg-neutral-100 text-[#7C7B77] cursor-default border border-neutral-200' 
                             : 'bg-blue-700 hover:bg-blue-800 text-white cursor-pointer active:scale-95'
