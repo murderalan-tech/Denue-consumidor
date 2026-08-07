@@ -79,7 +79,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const [adminError, setAdminError] = useState<string | null>(null);
 
   const allUsers = getAsesores();
-  const advisors = allUsers.filter(a => a.rol === 'asesor');
+  const advisors = allUsers.filter(a => a.rol !== 'administrador');
 
   // --- ADD ADMINISTRATOR / USER ACTION ---
   const handleAddAdminSubmit = (e: React.FormEvent) => {

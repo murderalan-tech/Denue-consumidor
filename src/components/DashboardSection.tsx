@@ -18,7 +18,7 @@ export default function DashboardSection({ empresas, currentUser }: DashboardSec
   const [selectedAsesor, setSelectedAsesor] = useState<string>('all');
 
   const isAdmin = currentUser.rol === 'administrador';
-  const advisors = getAsesores().filter(a => a.rol === 'asesor');
+  const advisors = getAsesores().filter(a => a.rol !== 'administrador');
   const allPlans = getPlanTrabajo();
 
   // 1. Filter empresas by user role or selected advisor filter

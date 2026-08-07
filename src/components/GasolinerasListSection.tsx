@@ -33,7 +33,7 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
   const [statusFilter, setStatusFilter] = useState<'all' | 'prospecto_real' | 'no_ligado_estrategia'>('all');
   const [asesorFilter, setAsesorFilter] = useState('all');
 
-  const asesores = getAsesores().filter(a => a.rol === 'asesor');
+  const asesores = getAsesores().filter(a => a.rol !== 'administrador');
   const isAdmin = currentUser.rol === 'administrador';
 
   // 1. Group gas stations by Corporate Group name

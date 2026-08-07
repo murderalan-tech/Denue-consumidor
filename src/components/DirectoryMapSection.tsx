@@ -29,7 +29,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const layerGroupRef = useRef<any>(null);
 
   const L = (window as any).L;
-  const asesores = getAsesores().filter(a => a.rol === 'asesor');
+  const asesores = getAsesores().filter(a => a.rol !== 'administrador');
   const isAdmin = currentUser.rol === 'administrador';
 
   // 1. Filter Leads list strictly by Giro ('refaccionaria' | 'taller_mecanico'), Advisor Role and search inputs
