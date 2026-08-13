@@ -336,7 +336,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
 
         {/* Footer Actions */}
         <div className="p-6 border-t border-[#EAEAEA] bg-[#F7F7F5] flex flex-col gap-3">
-          {estatus === 'prospecto_real' && (
+          {estatus === 'prospecto_real' && !!asesorId && asesorId !== 'null' && (
              <button
                 type="button"
                 onClick={handleAddToPlan}
