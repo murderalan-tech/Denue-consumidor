@@ -300,12 +300,32 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
                 </select>
               </div>
             ) : (
-              <div className="flex items-center gap-2 text-xs text-[#37352F] p-3 bg-neutral-50 border border-neutral-100 rounded-lg">
-                <span className="font-semibold text-[#7C7B77]">Asignado a:</span>
-                <span className="font-bold">{getAssignedAsesorName()}</span>
-                {!empresa.asesorId && (
-                  <span className="px-1.5 py-0.5 bg-neutral-200 text-neutral-600 rounded text-[9px] font-bold">
-                    No asesor
+              <div className="flex flex-col gap-2 p-3 bg-neutral-50 border border-neutral-100 rounded-lg">
+                <div className="flex items-center gap-2 text-xs text-[#37352F]">
+                  <span className="font-semibold text-[#7C7B77]">Asignado a:</span>
+                  <span className="font-bold">{getAssignedAsesorName()}</span>
+                  {!empresa.asesorId && (
+                    <span className="px-1.5 py-0.5 bg-neutral-200 text-neutral-600 rounded text-[9px] font-bold">
+                      Sin asignar
+                    </span>
+                  )}
+                </div>
+                {!empresa.asesorId && !asesorId && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm("¿Seguro que deseas asignarte este prospecto? Al asignarlo, serás responsable de su seguimiento.")) {
+                        setAsesorId(currentUser.id);
+                      }
+                    }}
+                    className="mt-1 py-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-emerald-300"
+                  >
+                    + Asignarme este prospecto
+                  </button>
+                )}
+                {!empresa.asesorId && asesorId === currentUser.id && (
+                  <span className="text-[10px] text-emerald-600 font-bold block mt-1 animate-pulse">
+                    ✅ Prospecto listo para ser asignado a ti. Presiona "Guardar Cambios".
                   </span>
                 )}
               </div>

@@ -41,7 +41,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
     }
 
     // Role filter
-    if (!isAdmin && emp.asesorId !== currentUser.id) {
+    if (!isAdmin && emp.asesorId !== currentUser.id && !!emp.asesorId && emp.asesorId !== 'null') {
       return false;
     }
     
@@ -57,7 +57,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
     let matchesAsesor = true;
     if (isAdmin) {
       if (asesorFilter === 'unassigned') {
-        matchesAsesor = emp.asesorId === null;
+        matchesAsesor = !emp.asesorId || emp.asesorId === 'null';
       } else if (asesorFilter !== 'all') {
         matchesAsesor = emp.asesorId === asesorFilter;
       }
@@ -348,7 +348,9 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
                   <div className="flex justify-between items-center text-[9px] pt-1.5 border-t border-[#F1F1EF] text-[#7C7B77]">
                     <span className="truncate max-w-[120px]">
-                      👤 {isAdmin ? (asesores.find(a => a.id === emp.asesorId)?.nombre || 'No asesor') : 'Tú'}
+                      👤 {isAdmin 
+                          ? (asesores.find(a => a.id === emp.asesorId)?.nombre || 'No asesor') 
+                          : (!emp.asesorId || emp.asesorId === 'null' ? 'Sin asignar' : 'Tú')}
                     </span>
                     {emp.telefono && <span className="shrink-0">📞 Activo</span>}
                   </div>
