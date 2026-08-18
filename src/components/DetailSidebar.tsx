@@ -112,7 +112,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
   };
 
   const getAssignedAsesorName = () => {
-    if (!empresa.asesorId) return 'No asesor';
+    if (!empresa.asesorId || empresa.asesorId === 'null') return 'No asesor';
     const all = getAsesores();
     const found = all.find(a => a.id === empresa.asesorId);
     return found ? found.nombre : 'No asesor';
@@ -304,13 +304,13 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
                 <div className="flex items-center gap-2 text-xs text-[#37352F]">
                   <span className="font-semibold text-[#7C7B77]">Asignado a:</span>
                   <span className="font-bold">{getAssignedAsesorName()}</span>
-                  {!empresa.asesorId && (
+                  {(!empresa.asesorId || empresa.asesorId === 'null') && (
                     <span className="px-1.5 py-0.5 bg-neutral-200 text-neutral-600 rounded text-[9px] font-bold">
                       Sin asignar
                     </span>
                   )}
                 </div>
-                {!empresa.asesorId && !asesorId && (
+                {(!empresa.asesorId || empresa.asesorId === 'null') && (!asesorId || asesorId === 'null') && (
                   <button
                     type="button"
                     onClick={() => {
@@ -323,7 +323,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
                     + Asignarme este prospecto
                   </button>
                 )}
-                {!empresa.asesorId && asesorId === currentUser.id && (
+                {(!empresa.asesorId || empresa.asesorId === 'null') && asesorId === currentUser.id && (
                   <span className="text-[10px] text-emerald-600 font-bold block mt-1 animate-pulse">
                     ✅ Prospecto listo para ser asignado a ti. Presiona "Guardar Cambios".
                   </span>
