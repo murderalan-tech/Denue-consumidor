@@ -114,6 +114,14 @@ export async function loginWithFirebaseGoogle(): Promise<{ email: string; name: 
 
 // --- CLOUD TO LOCAL CACHE SYNC ENGINE ---
 
+// Copia en memoria de las empresas recién traídas de Firestore, válida para
+// la sesión actual del navegador. Con miles de empresas (importaciones CSV
+// acumuladas), JSON.stringify(list) puede superar la cuota de localStorage
+// (~5-10MB por origen); cuando eso pasa, seguimos sirviendo datos reales y
+// actualizados desde esta variable en vez de depender de un localStorage
+// que puede haber quedado a medias o con datos de una sesión anterior.
+let empresasMemCache: Empresa[] | null = null;
+
 export async function syncCloudToLocal(): Promise<void> {
   if (!isCloudActive() || !db) return;
   try {
@@ -122,9 +130,14 @@ export async function syncCloudToLocal(): Promise<void> {
     if (!snapEmp.empty) {
       const list: Empresa[] = [];
       snapEmp.forEach(d => list.push(d.data() as Empresa));
-      localStorage.setItem('denue_pv_empresas', JSON.stringify(list));
+      empresasMemCache = list;
+      try {
+        localStorage.setItem('denue_pv_empresas', JSON.stringify(list));
+      } catch (e) {
+        console.warn('No se pudo cachear localmente la lista completa de empresas (excede la cuota de localStorage). Se sigue usando la copia en memoria de esta sesión, ya sincronizada con la nube.', e);
+      }
     }
-    
+
     // 2. Fetch advisors
     const snapAsesores = await getDocs(collection(db, 'asesores'));
     if (!snapAsesores.empty) {
@@ -152,40 +165,71 @@ export async function initializeDb(): Promise<void> {
 // --- HYBRID CRUD DATA METHODS ---
 
 export function getEmpresas(): Empresa[] {
-  return localDb.getEmpresas();
+  // Prioriza la copia en memoria recién sincronizada con la nube (ver
+  // syncCloudToLocal); si todavía no hay una (p. ej. nube inactiva u
+  // offline), cae al caché de localStorage/semilla local.
+  return empresasMemCache ?? localDb.getEmpresas();
 }
 
 export function updateEmpresa(updatedEmpresa: Empresa): Empresa {
-  const updated = localDb.updateEmpresa(updatedEmpresa);
-  
+  let updated: Empresa;
+  try {
+    updated = localDb.updateEmpresa(updatedEmpresa);
+  } catch (e) {
+    console.warn('No se pudo persistir el cambio en la caché local (localStorage lleno). El cambio se conserva en memoria y se guarda en la nube.', e);
+    updated = { ...updatedEmpresa, fechaActualizacion: new Date().toISOString() };
+  }
+
+  if (empresasMemCache) {
+    empresasMemCache = empresasMemCache.map(e => e.id === updated.id ? updated : e);
+  }
+
   if (isCloudActive() && db) {
     setDoc(doc(db, 'empresas', updatedEmpresa.id), updated).catch(err => {
       console.error("Cloud sync failed for updateEmpresa:", err);
     });
   }
-  
+
   return updated;
 }
 
 export function addEmpresa(empresa: Empresa): Empresa {
-  const updated = localDb.addEmpresa(empresa);
-  
+  let updated: Empresa;
+  try {
+    updated = localDb.addEmpresa(empresa);
+  } catch (e) {
+    console.warn('No se pudo persistir la nueva empresa en la caché local (localStorage lleno). Se conserva en memoria y se guarda en la nube.', e);
+    updated = { ...empresa, fechaActualizacion: new Date().toISOString() };
+  }
+
+  if (empresasMemCache) {
+    empresasMemCache = [...empresasMemCache, updated];
+  }
+
   if (isCloudActive() && db) {
     setDoc(doc(db, 'empresas', empresa.id), updated).catch(err => {
       console.error("Cloud sync failed for addEmpresa:", err);
     });
   }
-  
+
   return updated;
 }
 
 export function deleteAllEmpresas(giro?: Giro): void {
   let deletedIds = new Set<string>();
   if (giro) {
-    deletedIds = new Set(localDb.getEmpresas().filter(e => e.giro === giro).map(e => e.id));
+    deletedIds = new Set(getEmpresas().filter(e => e.giro === giro).map(e => e.id));
   }
-  
-  localDb.deleteAllEmpresas(giro);
+
+  try {
+    localDb.deleteAllEmpresas(giro);
+  } catch (e) {
+    console.warn('No se pudo actualizar la caché local al vaciar el catálogo (localStorage lleno). La eliminación en la nube continúa igual.', e);
+  }
+
+  if (empresasMemCache) {
+    empresasMemCache = giro ? empresasMemCache.filter(e => e.giro !== giro) : [];
+  }
 
   if (isCloudActive() && db) {
     if (giro) {
@@ -226,9 +270,23 @@ export async function addEmpresasBulk(
   newEmpresas: Empresa[],
   onProgress?: (progressPercent: number, count: number) => void
 ): Promise<Empresa[]> {
-  // 1. Always save to LocalStorage cache immediately
-  const updated = localDb.addEmpresasBulk(newEmpresas);
-  
+  // 1. Always save to LocalStorage cache immediately (best-effort: con
+  // catálogos grandes esto puede exceder la cuota de localStorage; si pasa,
+  // seguimos con la copia en memoria y la nube, que es lo que de verdad
+  // importa para que todos los asesores vean el catálogo actualizado)
+  let updated: Empresa[];
+  try {
+    updated = localDb.addEmpresasBulk(newEmpresas);
+  } catch (e) {
+    console.warn('No se pudo persistir la carga masiva en la caché local (localStorage lleno). Se conserva en memoria y se guarda en la nube.', e);
+    const dateStr = new Date().toISOString();
+    updated = newEmpresas.map(e => ({ ...e, fechaActualizacion: dateStr }));
+  }
+
+  if (empresasMemCache) {
+    empresasMemCache = [...empresasMemCache, ...updated];
+  }
+
   // 2. Sync to Firebase Cloud Firestore in chunks of 450 (Firestore limit is 500 per batch)
   if (isCloudActive() && db) {
     const CHUNK_SIZE = 450;
@@ -345,7 +403,17 @@ export function updateAsesor(asesor: Asesor): Asesor {
 }
 
 export function deleteAsesor(id: string): void {
-  localDb.deleteAsesor(id);
+  try {
+    localDb.deleteAsesor(id);
+  } catch (e) {
+    console.warn('No se pudo actualizar la caché local al eliminar al asesor (localStorage lleno). La actualización en la nube continúa igual.', e);
+  }
+
+  if (empresasMemCache) {
+    empresasMemCache = empresasMemCache.map(e =>
+      e.asesorId === id ? { ...e, asesorId: null, fechaActualizacion: new Date().toISOString() } : e
+    );
+  }
 
   if (isCloudActive() && db) {
     deleteDoc(doc(db, 'asesores', id)).catch(err => {

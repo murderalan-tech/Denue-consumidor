@@ -1,17 +1,19 @@
 import { useState, useEffect } from 'react';
-import { 
-  Fuel, 
-  Search, 
-  ExternalLink, 
-  Save, 
-  CheckCircle2, 
-  User, 
-  Building2, 
-  MessageSquare, 
-  Link2 
+import {
+  Fuel,
+  Search,
+  ExternalLink,
+  Save,
+  CheckCircle2,
+  User,
+  Building2,
+  MessageSquare,
+  Link2,
+  Download
 } from 'lucide-react';
 import { Empresa, Asesor } from '../types';
 import { getAsesores, updateEmpresa, savePlanTrabajo, getPlanTrabajo } from '../database/dbService';
+import { downloadEmpresasCsv } from '../utils/csvExport';
 
 interface GasolinerasListSectionProps {
   empresas: Empresa[];
@@ -38,6 +40,12 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
 
   // 1. Group gas stations by Corporate Group name
   const gasolineras = empresas.filter(e => e.giro === 'gasolinera');
+
+  // Descarga TODA la base de gasolineras tal como vive en Firebase (no solo
+  // los grupos filtrados/visibles en pantalla en este momento).
+  const handleDownloadDatabase = () => {
+    downloadEmpresasCsv(gasolineras, getAsesores(), 'gasolineras');
+  };
 
   // Map of groupName -> list of station Empresas
   const groupsMap: Record<string, Empresa[]> = {};
@@ -224,6 +232,19 @@ export default function GasolinerasListSection({ empresas, currentUser, onDataCh
                 <option key={a.id} value={a.id}>{a.nombre}</option>
               ))}
             </select>
+          )}
+
+          {/* Download full database (Admin only) */}
+          {isAdmin && (
+            <button
+              type="button"
+              onClick={handleDownloadDatabase}
+              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-white border border-[#EAEAEA] hover:border-blue-300 hover:bg-blue-50 text-[#37352F] hover:text-blue-700 rounded-md text-[10px] font-bold uppercase tracking-wide transition-all shrink-0 cursor-pointer"
+              title="Descargar toda la base de datos de gasolineras (CSV)"
+            >
+              <Download className="w-3 h-3" />
+              Descargar CSV
+            </button>
           )}
         </div>
       </div>

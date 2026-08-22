@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Download } from 'lucide-react';
 import { Empresa, Asesor, EstatusPros, ESTATUS_LABELS } from '../types';
 import { getAsesores } from '../database/dbService';
+import { downloadEmpresasCsv } from '../utils/csvExport';
 
 interface DirectoryMapSectionProps {
   giro: 'refaccionaria' | 'taller_mecanico';
@@ -31,6 +32,14 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
   const L = (window as any).L;
   const asesores = getAsesores().filter(a => a.rol !== 'administrador');
   const isAdmin = currentUser.rol === 'administrador';
+
+  // Descarga TODA la base de este giro tal como vive en Firebase (no solo lo
+  // que está filtrado/visible en pantalla en este momento).
+  const handleDownloadDatabase = () => {
+    const allInGiro = empresas.filter(emp => emp.giro === giro);
+    const filenamePrefix = giro === 'refaccionaria' ? 'refaccionarias' : 'talleres_mecanicos';
+    downloadEmpresasCsv(allInGiro, getAsesores(), filenamePrefix);
+  };
 
   // 1. Filter Leads list strictly by Giro ('refaccionaria' | 'taller_mecanico'), Advisor Role and search inputs
   const filteredEmpresas = useMemo(() => {
@@ -312,6 +321,19 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
                 </select>
               </div>
             )}
+
+            {/* Download full database (Admin only) */}
+            {isAdmin && (
+              <button
+                type="button"
+                onClick={handleDownloadDatabase}
+                className="w-full flex items-center justify-center gap-1.5 px-2 py-1.5 bg-white border border-[#EAEAEA] hover:border-blue-300 hover:bg-blue-50 text-[#37352F] hover:text-blue-700 rounded text-[10px] font-bold uppercase tracking-wide transition-all cursor-pointer"
+                title="Descargar toda la base de datos de esta sección (CSV)"
+              >
+                <Download className="w-3 h-3" />
+                Descargar base de datos (CSV)
+              </button>
+            )}
           </div>
         </div>
 
@@ -326,7 +348,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
             </div>
           ) : (
             visibleEmpresas.map(emp => {
-              const estLabel = ESTATUS_LABELS[emp.estatus];
+              const estLabel = ESTATUS_LABELS[emp.estatus as keyof typeof ESTATUS_LABELS] || { bg: 'bg-gray-100', text: 'text-gray-500', border: 'border-gray-200', label: emp.estatus || 'Sin estatus' };
               return (
                 <div
                   key={emp.id}
