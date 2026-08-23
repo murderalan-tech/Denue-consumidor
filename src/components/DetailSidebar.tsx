@@ -32,8 +32,22 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
 
   if (!empresa || !isOpen) return null;
 
+  // En Refaccionarias y Talleres Mecánicos: si el estatus va a dejar de ser
+  // "Sin acción", es obligatorio que la empresa quede con un asesor
+  // comercial asignado. Si el estatus no se mueve (aunque sí cambie el
+  // asesor), no aplica esta restricción.
+  const requiereAsesorPorCambioDeEstatus =
+    (empresa.giro === 'refaccionaria' || empresa.giro === 'taller_mecanico') &&
+    empresa.estatus === 'sin_accion' &&
+    estatus !== 'sin_accion' &&
+    (!asesorId || asesorId === 'null');
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (requiereAsesorPorCambioDeEstatus) {
+      alert('Para cambiar el estatus de "Sin acción" a otro estatus, primero debes asignar un Asesor Comercial.');
+      return;
+    }
     onSave({
       ...empresa,
       telefono,
@@ -336,6 +350,11 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
 
         {/* Footer Actions */}
         <div className="p-6 border-t border-[#EAEAEA] bg-[#F7F7F5] flex flex-col gap-3">
+          {requiereAsesorPorCambioDeEstatus && (
+            <p className="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 leading-relaxed">
+              Para cambiar el estatus de "Sin acción" a otro, primero asigna un Asesor Comercial.
+            </p>
+          )}
           {estatus === 'prospecto_real' && !!asesorId && asesorId !== 'null' && (
              <button
                 type="button"
@@ -358,7 +377,13 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
             <button
               type="submit"
               onClick={handleSubmit}
-              className="flex-1 py-2 bg-blue-700 hover:bg-blue-800 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm cursor-pointer"
+              disabled={requiereAsesorPorCambioDeEstatus}
+              title={requiereAsesorPorCambioDeEstatus ? 'Asigna un Asesor Comercial para poder guardar este cambio de estatus' : undefined}
+              className={`flex-1 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm ${
+                requiereAsesorPorCambioDeEstatus
+                  ? 'bg-neutral-200 text-neutral-500 cursor-not-allowed'
+                  : 'bg-blue-700 hover:bg-blue-800 text-white cursor-pointer'
+              }`}
             >
               <Save className="w-3.5 h-3.5" />
               Guardar Cambios
