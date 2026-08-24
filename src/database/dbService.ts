@@ -1,16 +1,17 @@
 import { initializeApp, getApp, getApps } from 'firebase/app';
-import { 
-  getFirestore, 
-  collection, 
-  getDocs, 
-  doc, 
-  setDoc, 
+import {
+  getFirestore,
+  collection,
+  getDocs,
+  doc,
+  setDoc,
   deleteDoc,
   writeBatch,
   query,
   where,
   getDoc,
-  Firestore
+  Firestore,
+  DocumentReference
 } from 'firebase/firestore';
 import { getAuth, GoogleAuthProvider, signInWithPopup, Auth } from 'firebase/auth';
 import { Empresa, PlanTrabajo, Asesor, Giro } from '../types';
@@ -215,7 +216,27 @@ export function addEmpresa(empresa: Empresa): Empresa {
   return updated;
 }
 
-export function deleteAllEmpresas(giro?: Giro): void {
+// Firestore rechaza un writeBatch con más de 500 operaciones. Con catálogos
+// de miles de empresas (ej. Talleres Mecánicos con >13,000 registros), un
+// solo batch.delete() por todos los documentos truena silenciosamente
+// (el error solo se veía en la consola), así que la nube nunca quedaba
+// realmente vacía aunque la vista local sí. Aquí se trocea en lotes seguros.
+const FIRESTORE_BATCH_LIMIT = 450;
+
+async function deleteRefsInChunks(refs: DocumentReference[]): Promise<void> {
+  if (refs.length === 0 || !db) return;
+  const chunks: DocumentReference[][] = [];
+  for (let i = 0; i < refs.length; i += FIRESTORE_BATCH_LIMIT) {
+    chunks.push(refs.slice(i, i + FIRESTORE_BATCH_LIMIT));
+  }
+  await Promise.all(chunks.map(chunk => {
+    const batch = writeBatch(db!);
+    chunk.forEach(ref => batch.delete(ref));
+    return batch.commit();
+  }));
+}
+
+export async function deleteAllEmpresas(giro?: Giro): Promise<void> {
   let deletedIds = new Set<string>();
   if (giro) {
     deletedIds = new Set(getEmpresas().filter(e => e.giro === giro).map(e => e.id));
@@ -231,39 +252,19 @@ export function deleteAllEmpresas(giro?: Giro): void {
     empresasMemCache = giro ? empresasMemCache.filter(e => e.giro !== giro) : [];
   }
 
-  if (isCloudActive() && db) {
-    if (giro) {
-       const empresasQuery = query(collection(db, 'empresas'), where('giro', '==', giro));
-       getDocs(empresasQuery).then(snap => {
-         const batch = writeBatch(db!);
-         snap.forEach(d => batch.delete(d.ref));
-         batch.commit();
-       }).catch(err => console.error("Cloud deleteAllEmpresas failed:", err));
+  if (!isCloudActive() || !db) return;
 
-       getDocs(collection(db, 'plan_trabajo')).then(snap => {
-         const batch = writeBatch(db!);
-         snap.forEach(d => {
-            const data = d.data();
-            if (deletedIds.has(data.empresaId)) {
-                batch.delete(d.ref);
-            }
-         });
-         batch.commit();
-       }).catch(err => console.error("Cloud deleteAllPlanTrabajo failed:", err));
-    } else {
-      getDocs(collection(db, 'empresas')).then(snap => {
-        const batch = writeBatch(db!);
-        snap.forEach(d => batch.delete(d.ref));
-        batch.commit();
-      }).catch(err => console.error("Cloud deleteAllEmpresas failed:", err));
+  const empresasQuery = giro
+    ? query(collection(db, 'empresas'), where('giro', '==', giro))
+    : collection(db, 'empresas');
+  const empSnap = await getDocs(empresasQuery);
+  await deleteRefsInChunks(empSnap.docs.map(d => d.ref));
 
-      getDocs(collection(db, 'plan_trabajo')).then(snap => {
-        const batch = writeBatch(db!);
-        snap.forEach(d => batch.delete(d.ref));
-        batch.commit();
-      }).catch(err => console.error("Cloud deleteAllPlanTrabajo failed:", err));
-    }
-  }
+  const plansSnap = await getDocs(collection(db, 'plan_trabajo'));
+  const planRefs = plansSnap.docs
+    .filter(d => !giro || deletedIds.has(d.data().empresaId))
+    .map(d => d.ref);
+  await deleteRefsInChunks(planRefs);
 }
 
 export async function addEmpresasBulk(

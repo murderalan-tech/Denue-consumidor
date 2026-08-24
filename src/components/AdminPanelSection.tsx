@@ -70,6 +70,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
   // Delete Select State
   const [deleteTarget, setDeleteTarget] = useState<'todo' | Giro>('todo');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Admin Form States
   const [adminNombre, setAdminNombre] = useState('');
@@ -437,25 +438,34 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
   const totalInvalid = parsedRows.filter(r => !r.isValid).length;
 
   // --- DELETE ALL EMPRESAS ACTION ---
-  const handleDeleteAllEmpresas = () => {
+  const handleDeleteAllEmpresas = async () => {
     let confirmMsg = "⚠️ ¿Estás seguro de que deseas ELIMINAR TODAS las empresas de la base de datos?\n\nEsta acción borrará todas las refaccionarias, talleres, gasolineras y sus planes de trabajo asociados. Esta acción no se puede deshacer.";
-    
+
     if (deleteTarget !== 'todo') {
       const label = GIRO_LABELS[deleteTarget as Giro];
       confirmMsg = `⚠️ ¿Estás seguro de que deseas ELIMINAR ÚNICAMENTE la categoría de ${label}?\n\nEsta acción borrará todos los registros de ${label.toLowerCase()} y sus planes de trabajo asociados. Esta acción no se puede deshacer.`;
     }
 
-    if (window.confirm(confirmMsg)) {
+    if (!window.confirm(confirmMsg)) return;
+
+    setIsDeleting(true);
+    setBulkSuccessMsg('');
+    try {
       if (deleteTarget === 'todo') {
-        deleteAllEmpresas();
-        setBulkSuccessMsg("Se eliminaron todas las empresas del catálogo.");
+        await deleteAllEmpresas();
+        setBulkSuccessMsg("Se eliminaron todas las empresas del catálogo (local y Firebase Cloud).");
       } else {
-        deleteAllEmpresas(deleteTarget as Giro);
-        setBulkSuccessMsg(`Se eliminó la categoría de ${GIRO_LABELS[deleteTarget as Giro]} del catálogo.`);
+        await deleteAllEmpresas(deleteTarget as Giro);
+        setBulkSuccessMsg(`Se eliminó la categoría de ${GIRO_LABELS[deleteTarget as Giro]} del catálogo (local y Firebase Cloud).`);
       }
       setParsedRows([]);
       setCsvFileName('');
       onDataChange();
+    } catch (err) {
+      console.error('Error al vaciar el catálogo en Firebase Cloud:', err);
+      alert('⚠️ La eliminación local se aplicó, pero ocurrió un error al borrar en Firebase Cloud. Revisa tu conexión e inténtalo de nuevo; si el problema persiste, puede que algunos registros sigan en la nube.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -759,11 +769,12 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                   <button
                     type="button"
                     onClick={handleDeleteAllEmpresas}
-                    className="py-2 px-3 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border-l border-rose-200"
+                    disabled={isDeleting}
+                    className="py-2 px-3 hover:bg-rose-100 disabled:opacity-50 disabled:cursor-not-allowed text-rose-700 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border-l border-rose-200"
                     title="Ejecutar eliminación"
                   >
-                    <Trash2 className="w-4 h-4 text-rose-600" />
-                    Vaciar
+                    <Trash2 className={`w-4 h-4 text-rose-600 ${isDeleting ? 'animate-spin' : ''}`} />
+                    {isDeleting ? 'Eliminando...' : 'Vaciar'}
                   </button>
                 </div>
 
