@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   FileSpreadsheet,
   Upload,
@@ -91,11 +91,22 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
   const [editingCiudadesUserId, setEditingCiudadesUserId] = useState<string | null>(null);
   const [selectedCiudades, setSelectedCiudades] = useState<string[]>([]);
+  const ciudadesPanelRef = useRef<HTMLDivElement>(null);
 
   const handleStartEditCiudades = (targetUser: Asesor) => {
     setEditingCiudadesUserId(targetUser.id);
     setSelectedCiudades(targetUser.ciudadesAsignadas || []);
   };
+
+  // El panel se agrega debajo de la tabla, dentro de un contenedor con
+  // scroll propio; si la tabla ya ocupa toda la pantalla, el panel abre
+  // fuera de la vista y da la impresión de que el clic en el lápiz "no
+  // hizo nada". Lo bajamos a la vista en cuanto se abre.
+  useEffect(() => {
+    if (editingCiudadesUserId && ciudadesPanelRef.current) {
+      ciudadesPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [editingCiudadesUserId]);
 
   const handleToggleCiudad = (ciudad: string) => {
     setSelectedCiudades(prev =>
@@ -1177,7 +1188,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                 const editingUser = allUsers.find(u => u.id === editingCiudadesUserId);
                 if (!editingUser) return null;
                 return (
-                  <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-xl p-4 space-y-3">
+                  <div ref={ciudadesPanelRef} className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-xl p-4 space-y-3">
                     <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#7C7B77] uppercase tracking-wider">
                       <MapPin className="w-3 h-3" />
                       Ciudades asignadas a {editingUser.nombre} (vacío = ve empresas de todas las ciudades)
