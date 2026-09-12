@@ -10,6 +10,7 @@ import {
   query,
   where,
   getDoc,
+  onSnapshot,
   Firestore,
   DocumentReference
 } from 'firebase/firestore';
@@ -161,6 +162,38 @@ export async function syncCloudToLocal(): Promise<void> {
 
 export async function initializeDb(): Promise<void> {
   localDb.initializeDb();
+}
+
+// --- REALTIME MULTI-USER SYNC ---
+
+// Escucha cambios en vivo de la colección 'empresas' (cambio de estatus,
+// asignación de asesor, nuevos registros, etc.) para que todos los usuarios
+// conectados vean de inmediato lo que otros van modificando, sin tener que
+// recargar la página. Devuelve una función para cancelar la suscripción.
+export function subscribeToEmpresas(onChange: (empresas: Empresa[]) => void): () => void {
+  if (!isCloudActive() || !db) {
+    return () => {};
+  }
+
+  const unsubscribe = onSnapshot(
+    collection(db, 'empresas'),
+    snap => {
+      const list: Empresa[] = [];
+      snap.forEach(d => list.push(d.data() as Empresa));
+      empresasMemCache = list;
+      try {
+        localStorage.setItem('denue_pv_empresas', JSON.stringify(list));
+      } catch (e) {
+        console.warn('No se pudo cachear localmente la lista de empresas tras una actualización en tiempo real.', e);
+      }
+      onChange(list);
+    },
+    err => {
+      console.error('La suscripción en tiempo real a empresas falló:', err);
+    }
+  );
+
+  return unsubscribe;
 }
 
 // --- HYBRID CRUD DATA METHODS ---

@@ -10,13 +10,14 @@ import EmpresasConcluidas from './components/EmpresasConcluidas';
 import DetailSidebar from './components/DetailSidebar';
 import LoginPage from './components/LoginPage';
 import { Empresa, Asesor } from './types';
-import { 
-  getEmpresas, 
-  getAsesores, 
-  initializeDb, 
+import {
+  getEmpresas,
+  getAsesores,
+  initializeDb,
   updateEmpresa,
   isCloudActive,
   syncCloudToLocal,
+  subscribeToEmpresas,
   loginWithFirebaseGoogle
 } from './database/dbService';
 
@@ -29,6 +30,14 @@ export default function App() {
       loadEmpresas();
     };
     init();
+
+    // Mantiene "empresas" al día en tiempo real: si otro usuario cambia el
+    // estatus o reasigna un asesor mientras esta app está abierta, el
+    // cambio llega solo, sin recargar la página.
+    const unsubscribe = subscribeToEmpresas((updatedEmpresas) => {
+      setEmpresas(updatedEmpresas);
+    });
+    return () => unsubscribe();
   }, []);
 
   // --- STATE ---
