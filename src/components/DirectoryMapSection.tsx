@@ -53,7 +53,16 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
     if (!isAdmin && emp.asesorId !== currentUser.id && !!emp.asesorId && emp.asesorId !== 'null') {
       return false;
     }
-    
+
+    // Ciudades asignadas al asesor: restringe qué empresas puede ver,
+    // independientemente de si ya están asignadas a él o sin acción.
+    // Sin ciudades asignadas (lista vacía/ausente) = ve empresas de todas las ciudades.
+    if (!isAdmin && currentUser.ciudadesAsignadas && currentUser.ciudadesAsignadas.length > 0) {
+      if (!emp.ciudad || !currentUser.ciudadesAsignadas.includes(emp.ciudad.trim())) {
+        return false;
+      }
+    }
+
     // Search text filter
     const matchesSearch = 
       emp.nombre.toLowerCase().includes(searchTerm.toLowerCase()) ||

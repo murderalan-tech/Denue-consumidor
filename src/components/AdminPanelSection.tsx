@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { 
-  FileSpreadsheet, 
-  Upload, 
-  Download, 
-  Plus, 
-  CheckCircle2, 
-  XCircle, 
+import {
+  FileSpreadsheet,
+  Upload,
+  Download,
+  Plus,
+  CheckCircle2,
+  XCircle,
   AlertTriangle,
   Shield,
   UserPlus,
-  Trash2
+  Trash2,
+  Pencil,
+  MapPin
 } from 'lucide-react';
 import { Empresa, Giro, Asesor, RolAsesor, EstatusPros, GIRO_LABELS } from '../types';
-import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor, deleteAllEmpresas } from '../database/dbService';
+import { addEmpresa, addEmpresasBulk, getAsesores, addAsesor, updateAsesor, deleteAsesor, deleteAllEmpresas, getEmpresas } from '../database/dbService';
 
 interface AdminPanelSectionProps {
   currentUser: Asesor;
@@ -81,6 +83,31 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
 
   const allUsers = getAsesores();
   const advisors = allUsers.filter(a => a.rol !== 'administrador');
+
+  // --- CIUDADES ASIGNADAS POR ASESOR ---
+  const uniqueCities = Array.from(
+    new Set(getEmpresas().filter(e => e.ciudad && e.ciudad.trim() !== '').map(e => e.ciudad!.trim()))
+  ).sort();
+
+  const [editingCiudadesUserId, setEditingCiudadesUserId] = useState<string | null>(null);
+  const [selectedCiudades, setSelectedCiudades] = useState<string[]>([]);
+
+  const handleStartEditCiudades = (targetUser: Asesor) => {
+    setEditingCiudadesUserId(targetUser.id);
+    setSelectedCiudades(targetUser.ciudadesAsignadas || []);
+  };
+
+  const handleToggleCiudad = (ciudad: string) => {
+    setSelectedCiudades(prev =>
+      prev.includes(ciudad) ? prev.filter(c => c !== ciudad) : [...prev, ciudad]
+    );
+  };
+
+  const handleGuardarCiudades = (targetUser: Asesor) => {
+    updateAsesor({ ...targetUser, ciudadesAsignadas: selectedCiudades });
+    setEditingCiudadesUserId(null);
+    onDataChange();
+  };
 
   // --- ADD ADMINISTRATOR / USER ACTION ---
   const handleAddAdminSubmit = (e: React.FormEvent) => {
@@ -1073,6 +1100,7 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                       <th className="p-3">Nombre</th>
                       <th className="p-3">Correo Google</th>
                       <th className="p-3">Rol</th>
+                      <th className="p-3">Ciudades</th>
                       <th className="p-3 text-right">Acciones</th>
                     </tr>
                   </thead>
@@ -1105,6 +1133,25 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                             </select>
                           )}
                         </td>
+                        <td className="p-3">
+                          {u.rol === 'administrador' ? (
+                            <span className="text-[10px] text-[#A0A09C] italic">Todas</span>
+                          ) : (
+                            <div className="flex items-center gap-1.5">
+                              <span className="text-[10px] text-[#37352F] max-w-[160px] truncate" title={(u.ciudadesAsignadas && u.ciudadesAsignadas.length > 0) ? u.ciudadesAsignadas.join(', ') : 'Todas'}>
+                                {(u.ciudadesAsignadas && u.ciudadesAsignadas.length > 0) ? u.ciudadesAsignadas.join(', ') : 'Todas'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleStartEditCiudades(u)}
+                                className="p-1 text-[#7C7B77] hover:text-blue-700 hover:bg-blue-50 rounded transition-colors cursor-pointer shrink-0"
+                                title="Editar ciudades asignadas"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          )}
+                        </td>
                         <td className="p-3 text-right">
                           {u.id !== currentUser.id ? (
                             <button
@@ -1124,6 +1171,67 @@ export default function AdminPanelSection({ currentUser, onDataChange }: AdminPa
                   </tbody>
                 </table>
               </div>
+
+              {/* Inline panel: editar ciudades asignadas a un asesor */}
+              {editingCiudadesUserId && (() => {
+                const editingUser = allUsers.find(u => u.id === editingCiudadesUserId);
+                if (!editingUser) return null;
+                return (
+                  <div className="bg-[#FBFBFA] border border-[#EAEAEA] rounded-xl p-4 space-y-3">
+                    <div className="flex items-center gap-1.5 text-[9px] font-bold text-[#7C7B77] uppercase tracking-wider">
+                      <MapPin className="w-3 h-3" />
+                      Ciudades asignadas a {editingUser.nombre} (vacío = ve empresas de todas las ciudades)
+                    </div>
+
+                    {uniqueCities.length === 0 ? (
+                      <div className="text-xs text-[#7C7B77] italic">
+                        Todavía no hay ciudades registradas en las empresas cargadas.
+                      </div>
+                    ) : (
+                      <div className="flex flex-wrap gap-2">
+                        {uniqueCities.map(ciudad => {
+                          const checked = selectedCiudades.includes(ciudad);
+                          return (
+                            <label
+                              key={ciudad}
+                              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border text-xs cursor-pointer transition-colors select-none ${
+                                checked
+                                  ? 'bg-blue-50 border-blue-300 text-blue-700 font-semibold'
+                                  : 'bg-white border-[#EAEAEA] text-[#37352F] hover:border-neutral-300'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => handleToggleCiudad(ciudad)}
+                                className="w-3.5 h-3.5 cursor-pointer accent-blue-600"
+                              />
+                              {ciudad}
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    <div className="flex justify-end gap-2 pt-1">
+                      <button
+                        type="button"
+                        onClick={() => setEditingCiudadesUserId(null)}
+                        className="px-3 py-1.5 text-xs font-semibold text-[#7C7B77] hover:text-[#37352F] rounded-lg transition-colors cursor-pointer"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleGuardarCiudades(editingUser)}
+                        className="px-4 py-1.5 bg-blue-700 hover:bg-blue-800 text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+                      >
+                        Guardar Ciudades
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
 
           </div>

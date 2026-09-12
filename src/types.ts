@@ -18,6 +18,7 @@ export interface Asesor {
   correoGoogle: string;
   rol: RolAsesor;
   fotoUrl?: string; // Google Profile avatar image URL
+  ciudadesAsignadas?: string[]; // Ciudades cuyas empresas puede ver este asesor; vacío/ausente = ve empresas de todas las ciudades
 }
 
 export interface Empresa {
