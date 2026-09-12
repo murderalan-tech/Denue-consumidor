@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Menu, User } from 'lucide-react';
 import Sidebar, { SidebarRoute } from './components/Sidebar';
 import DirectoryMapSection from './components/DirectoryMapSection';
@@ -71,6 +71,47 @@ export default function App() {
   const loadEmpresas = () => {
     setEmpresas(getEmpresas());
   };
+
+  // --- AUTO-UPDATE: detecta un nuevo deploy y recarga sola la pestaña ---
+  // Evita que alguien se quede horas con una versión vieja de la app en
+  // memoria (y los errores que eso provoca) por dejar la pestaña abierta.
+  // No recarga mientras hay un formulario de empresa abierto, para no
+  // tirar cambios sin guardar a la mitad de una edición.
+  const isDrawerOpenRef = useRef(isDrawerOpen);
+  useEffect(() => {
+    isDrawerOpenRef.current = isDrawerOpen;
+  }, [isDrawerOpen]);
+
+  useEffect(() => {
+    const VERSION_CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutos
+
+    const checkForNewVersion = async () => {
+      try {
+        const res = await fetch(`/version.json?t=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.version && data.version !== __APP_VERSION__ && !isDrawerOpenRef.current) {
+          window.location.reload();
+        }
+      } catch (e) {
+        // Silencioso: si falla el chequeo (offline, etc.), se reintenta en el siguiente ciclo.
+      }
+    };
+
+    const intervalId = setInterval(checkForNewVersion, VERSION_CHECK_INTERVAL_MS);
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkForNewVersion();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
 
   // Sync data on startup or user change
   useEffect(() => {
