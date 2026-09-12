@@ -86,7 +86,7 @@ export default function DirectoryMapSection({ giro, empresas, currentUser, onSel
 
     return matchesSearch && matchesStatus && matchesAsesor && matchesCity;
     });
-  }, [empresas, giro, isAdmin, currentUser.id, searchTerm, statusFilter, asesorFilter, cityFilter]);
+  }, [empresas, giro, isAdmin, currentUser.id, currentUser.ciudadesAsignadas, searchTerm, statusFilter, asesorFilter, cityFilter]);
 
   const uniqueCities = useMemo(() => {
     return Array.from(

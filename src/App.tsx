@@ -18,6 +18,7 @@ import {
   isCloudActive,
   syncCloudToLocal,
   subscribeToEmpresas,
+  subscribeToAsesor,
   loginWithFirebaseGoogle
 } from './database/dbService';
 
@@ -71,6 +72,24 @@ export default function App() {
   const loadEmpresas = () => {
     setEmpresas(getEmpresas());
   };
+
+  // Mantiene el perfil del usuario en sesión (rol, ciudades asignadas,
+  // nombre) al día en tiempo real. Sin esto, si un administrador edita a un
+  // asesor que ya tiene la app abierta, ese asesor se queda con los datos
+  // de cuando inició sesión (guardados en localStorage) hasta que cierre
+  // sesión y vuelva a entrar, aunque recargue la página.
+  useEffect(() => {
+    if (!currentUser) return;
+    const unsubscribe = subscribeToAsesor(currentUser.id, (freshAsesor) => {
+      setCurrentUser(prev => {
+        if (!prev) return prev;
+        const updated: Asesor = { ...prev, ...freshAsesor, fotoUrl: prev.fotoUrl || freshAsesor.fotoUrl };
+        localStorage.setItem('denue_pv_user', JSON.stringify(updated));
+        return updated;
+      });
+    });
+    return () => unsubscribe();
+  }, [currentUser?.id]);
 
   // --- AUTO-UPDATE: detecta un nuevo deploy y recarga sola la pestaña ---
   // Evita que alguien se quede horas con una versión vieja de la app en

@@ -196,6 +196,31 @@ export function subscribeToEmpresas(onChange: (empresas: Empresa[]) => void): ()
   return unsubscribe;
 }
 
+// Escucha cambios en vivo del propio perfil del asesor logueado (rol,
+// ciudades asignadas, nombre, etc.). Sin esto, si un administrador edita a
+// un asesor que ya tiene la sesión abierta, ese asesor se queda con los
+// datos de cuando inició sesión (localStorage) hasta que cierre sesión y
+// vuelva a entrar, aunque recargue la página.
+export function subscribeToAsesor(asesorId: string, onChange: (asesor: Asesor) => void): () => void {
+  if (!isCloudActive() || !db) {
+    return () => {};
+  }
+
+  const unsubscribe = onSnapshot(
+    doc(db, 'asesores', asesorId),
+    snap => {
+      if (snap.exists()) {
+        onChange(snap.data() as Asesor);
+      }
+    },
+    err => {
+      console.error('La suscripción en tiempo real al asesor falló:', err);
+    }
+  );
+
+  return unsubscribe;
+}
+
 // --- HYBRID CRUD DATA METHODS ---
 
 export function getEmpresas(): Empresa[] {
