@@ -14,6 +14,7 @@ interface DetailSidebarProps {
 export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, onSave }: DetailSidebarProps) {
   const [telefono, setTelefono] = useState('');
   const [contacto, setContacto] = useState('');
+  const [ciudad, setCiudad] = useState('');
   const [estatus, setEstatus] = useState<EstatusPros>('sin_accion');
   const [asesorId, setAsesorId] = useState<string | null>(null);
 
@@ -25,6 +26,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
     if (empresa) {
       setTelefono(empresa.telefono || '');
       setContacto(empresa.contacto || '');
+      setCiudad(empresa.ciudad || '');
       setEstatus(empresa.estatus || 'sin_accion');
       setAsesorId(empresa.asesorId);
     }
@@ -52,6 +54,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
       ...empresa,
       telefono,
       contacto,
+      ciudad: ciudad.trim(),
       estatus,
       asesorId
     });
@@ -115,6 +118,7 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
       ...empresa,
       telefono,
       contacto,
+      ciudad: ciudad.trim(),
       estatus,
       asesorId,
       vecesAgregadoAlPlan: (empresa.vecesAgregadoAlPlan || 0) + 1,
@@ -198,6 +202,16 @@ export default function DetailSidebar({ empresa, isOpen, onClose, currentUser, o
             <div className="grid grid-cols-3">
               <span className="text-[#7C7B77] font-semibold">Dirección</span>
               <span className="col-span-2 text-[#37352F]">{empresa.direccion}</span>
+            </div>
+            <div className="grid grid-cols-3 items-center">
+              <span className="text-[#7C7B77] font-semibold">Ciudad</span>
+              <input
+                type="text"
+                value={ciudad}
+                onChange={(e) => setCiudad(e.target.value)}
+                placeholder="Ej. Chihuahua"
+                className="col-span-2 px-2 py-1 bg-white border border-[#EAEAEA] hover:border-[#CCCCCC] focus:border-blue-600 rounded text-xs focus:outline-none transition-all"
+              />
             </div>
             <div className="grid grid-cols-3">
               <span className="text-[#7C7B77] font-semibold">Giro</span>
